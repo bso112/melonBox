@@ -10,19 +10,19 @@ import androidx.navigation.compose.rememberNavController
 fun rememberMelonBoxState(
     navController: NavHostController = rememberNavController(),
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
-): MelonBoxState {
+): MelonBoxAppState {
     return remember(
         navController,
         snackBarHostState,
     ) {
-        MelonBoxState(
+        MelonBoxAppState(
             navController = navController,
             snackBarHostState = snackBarHostState,
         )
     }
 }
 
-class MelonBoxState(
+class MelonBoxAppState(
     val navController: NavHostController,
     val snackBarHostState: SnackbarHostState,
 )

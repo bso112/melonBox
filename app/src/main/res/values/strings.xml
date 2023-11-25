@@ -1,3 +1,25 @@
 <resources>
     <string name="app_name">melonBox</string>
+    <string name="msg_welcome">멜론박스에 오신 걸\n환영합니다</string>
+    <string name="action_input_share_melon_uri">담기</string>
+    <string name="title_playlist_preview_ytMusic">유투브 뮤직에서 찾았어요!</string>
+    <string name="subtitle_playlist_preview_ytMusic">이대로 유투브 뮤직 재생목록을 만들까요?</string>
+    <string name="title_playlist_preview_ApMusic">유투브 뮤직에서 찾았어요!</string>
+    <string name="subtitle_playlist_preview_ApMusic">이대로 유투브 뮤직 재생목록을 만들까요?</string>
+    <string name="action_cancel">취소</string>
+    <string name="action_confirm">확인</string>
+    <string name="action_replace">교체하기</string>
+    <string name="action_delete">삭제하기</string>
+    <string name="msg_confirm_delete">정말로 삭제하시겠습니까?</string>
+    <string name="hint_input_melon_playlist_url">멜론 플레이리스트 공유링크 입력…</string>
+    <string name="hint_search">노래, 아티스트 입력…</string>
+    <string name="action_select">선택하기</string>
+    <string name="msg_complete">완료!</string>
+    <string name="action_go_to_yt_music">확인하러가기</string>
+    <string name="action_login_google">Google로 계속하기</string>
+    <string name="action_login_apple">Apple로 로그인</string>
+    <string name="error_fail_oauth">인증에 실패했습니다. 다시 시도해 주세요</string>
+    <string name="label_fail_oauth">재시도</string>
+    <string name="action_copy">복사</string>
+    <string name="msg_cannot_open_yt_music">앱을 열 수 없습니다</string>
 </resources>

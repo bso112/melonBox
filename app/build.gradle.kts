@@ -1,16 +1,48 @@
-import org.jetbrains.kotlin.kapt3.base.Kapt.kapt
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+import com.google.common.base.Charsets
+import java.util.Properties
+import java.io.InputStreamReader
+import java.io.FileInputStream
 
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.gms.google-services")
+    id("kotlin-parcelize")
     kotlin("kapt")
-    alias(libs.plugins.hilt)
+    id("com.google.dagger.hilt.android")
+    alias(libs.plugins.kotlinx.serialization)
 }
+
+
+fun gradleProperties(propertiesFilePath: String): Properties {
+    val properties = Properties()
+    val localProperties = File(rootDir, propertiesFilePath)
+
+    if (localProperties.isFile) {
+        InputStreamReader(
+            FileInputStream(localProperties),
+            Charsets.UTF_8
+        ).use { reader ->
+            properties.load(reader)
+        }
+    }
+    return properties
+}
+
+
+val googleOauthClientId: String =
+    gradleProperties("apikey.properties").getProperty("GOOGLE_OAUTH_CLIENT_ID")
+val googleOauthClientSecret: String =
+    gradleProperties("apikey.properties").getProperty("GOOGLE_OAUTH_CLIENT_SECRET")
+
 
 android {
     namespace = "com.seoulventure.melonbox"
     compileSdk = 34
+
+    buildFeatures.buildConfig = true
 
     defaultConfig {
         applicationId = "com.seoulventure.melonbox"
@@ -23,6 +55,9 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String", "GOOGLE_OAUTH_CLIENT_ID", googleOauthClientId)
+        buildConfigField("String", "GOOGLE_OAUTH_CLIENT_SECRET", googleOauthClientSecret)
     }
 
     buildTypes {
@@ -35,11 +70,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -54,25 +89,41 @@ android {
     }
 }
 
+// Allow references to generated code
+kapt {
+    correctErrorTypes = true
+}
+
 dependencies {
 
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
     kapt(libs.hilt.android.compiler)
-    kapt(libs.hilt.compiler)
+
+    implementation(libs.bundles.ktor)
+
+    implementation("androidx.browser:browser:1.8.0-alpha01")
+    implementation(platform("com.google.firebase:firebase-bom:30.2.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation(libs.play.services.auth)
+
+    implementation(libs.kotlinx.collections.immutable)
 
     implementation(libs.coil.compose)
-    implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
-    implementation("androidx.activity:activity-compose:1.7.0")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.navigation.compose)
+
     implementation(platform("androidx.compose:compose-bom:2023.03.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    implementation(libs.androidx.material3)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
