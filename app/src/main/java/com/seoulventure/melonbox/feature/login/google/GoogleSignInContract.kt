@@ -16,7 +16,7 @@ class GoogleSignInContract(
 
     override fun createIntent(context: Context, input: String): Intent {
         return GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(input)
+            .requestServerAuthCode(input)
             .requestEmail()
             .build()
             .let {

@@ -33,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.navOptions
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.seoulventure.melonbox.Action
+import com.seoulventure.melonbox.BuildConfig
 import com.seoulventure.melonbox.MelonBoxAppState
 import com.seoulventure.melonbox.R
 import com.seoulventure.melonbox.feature.login.google.RegisterForGoogleLoginResult
@@ -48,17 +49,15 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val defaultWebClientId = stringResource(id = R.string.default_web_client_id)
-    val clientSecret = stringResource(id = R.string.google_api_key)
 
     val googleLoginLauncher = RegisterForGoogleLoginResult(
         onSuccess = {
             viewModel.getAccessToken(
-                clientId = defaultWebClientId,
-                clientSecret = clientSecret,
+                clientId = BuildConfig.GOOGLE_OAUTH_CLIENT_ID,
+                clientSecret = BuildConfig.GOOGLE_OAUTH_CLIENT_SECRET,
                 authorizationCode = it
             )
-            appState.navController.navigateMain(navOptions { popUpTo(appState.navController.graph.id) })
+            //appState.navController.navigateMain(navOptions { popUpTo(appState.navController.graph.id) })
         },
         onFailure = {
             logD(it.message.orEmpty())
@@ -67,7 +66,7 @@ fun LoginScreen(
     )
     LoginContent(
         onClickGoogleLogin = {
-            googleLoginLauncher.launch(defaultWebClientId)
+            googleLoginLauncher.launch(BuildConfig.GOOGLE_OAUTH_CLIENT_ID)
         },
         onClickAppleLogin = {
 

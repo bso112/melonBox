@@ -84,7 +84,6 @@ class YtMusicOAuthDataSource @Inject constructor(
             parameter("client_id", clientId)
             parameter("client_secret", clientSecret)
             parameter("code", authorizationCode)
-            parameter("redirect_uri", "https://www.naver.com/")
             parameter("grant_type", "authorization_code")
         }.body()
     }
