@@ -17,7 +17,8 @@ class LoginViewModel @Inject constructor(
     fun getAccessToken(
         clientId: String,
         clientSecret: String,
-        authorizationCode: String
+        authorizationCode: String,
+        onSuccess: () -> Unit,
     ) {
         viewModelScope.launch {
             kotlin.runCatching {
@@ -26,6 +27,8 @@ class LoginViewModel @Inject constructor(
                     clientSecret = clientSecret,
                     authorizationCode = authorizationCode
                 )
+            }.onSuccess {
+                onSuccess()
             }.onFailure {
                 it.printStackTrace()
             }

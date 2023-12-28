@@ -36,7 +36,7 @@ import com.seoulventure.melonbox.Action
 import com.seoulventure.melonbox.BuildConfig
 import com.seoulventure.melonbox.MelonBoxAppState
 import com.seoulventure.melonbox.R
-import com.seoulventure.melonbox.feature.login.google.RegisterForGoogleLoginResult
+import com.seoulventure.melonbox.feature.login.google.registerForGoogleLoginResult
 import com.seoulventure.melonbox.feature.main.navigateMain
 import com.seoulventure.melonbox.logD
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
@@ -50,14 +50,15 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
 
-    val googleLoginLauncher = RegisterForGoogleLoginResult(
+    val googleLoginLauncher = registerForGoogleLoginResult(
         onSuccess = {
             viewModel.getAccessToken(
                 clientId = BuildConfig.GOOGLE_OAUTH_CLIENT_ID,
                 clientSecret = BuildConfig.GOOGLE_OAUTH_CLIENT_SECRET,
                 authorizationCode = it
-            )
-            //appState.navController.navigateMain(navOptions { popUpTo(appState.navController.graph.id) })
+            ) {
+                navigateMain(appState)
+            }
         },
         onFailure = {
             logD(it.message.orEmpty())
@@ -72,6 +73,10 @@ fun LoginScreen(
 
         }
     )
+}
+
+private fun navigateMain(appState: MelonBoxAppState) {
+    appState.navController.navigateMain(navOptions { popUpTo(appState.navController.graph.id) })
 }
 
 @Composable

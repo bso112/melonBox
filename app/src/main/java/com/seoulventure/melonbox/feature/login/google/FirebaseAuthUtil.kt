@@ -14,7 +14,7 @@ import java.lang.IllegalStateException
 import java.util.concurrent.CountDownLatch
 
 
-internal object GoogleLoginUtil {
+internal object FirebaseAuthUtil {
 
     fun googleSignIn(
         activity: Activity,

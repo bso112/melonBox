@@ -12,10 +12,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.seoulventure.melonbox.feature.complete.completeScreen
 import com.seoulventure.melonbox.feature.login.LOGIN_ROUTE
 import com.seoulventure.melonbox.feature.login.loginScreen
+import com.seoulventure.melonbox.feature.main.MAIN_ROUTE
 import com.seoulventure.melonbox.feature.main.mainScreen
 import com.seoulventure.melonbox.feature.preview.playlistPreview
 import com.seoulventure.melonbox.feature.search.searchScreen
@@ -39,6 +42,8 @@ class MainActivity : ComponentActivity() {
 fun MelonBoxAppCompose(
     appState: MelonBoxAppState = rememberMelonBoxState(),
 ) {
+    val context = LocalContext.current
+
     MelonBoxTheme {
         Scaffold(
             modifier = Modifier
@@ -49,7 +54,7 @@ fun MelonBoxAppCompose(
             NavHost(
                 modifier = Modifier.padding(padding),
                 navController = appState.navController,
-                startDestination = LOGIN_ROUTE,
+                startDestination = if (GoogleSignIn.getLastSignedInAccount(context) == null) LOGIN_ROUTE else MAIN_ROUTE,
                 enterTransition = { EnterTransition.None },
                 exitTransition = { ExitTransition.None }
             ) {
