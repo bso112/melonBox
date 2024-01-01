@@ -45,13 +45,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavOptions
 import com.seoulventure.melonbox.Action
 import com.seoulventure.melonbox.MelonBoxAppState
 import com.seoulventure.melonbox.R
 import com.seoulventure.melonbox.feature.complete.navigateComplete
 import com.seoulventure.melonbox.feature.main.MAIN_ROUTE
-import com.seoulventure.melonbox.feature.preview.data.Song
+import com.seoulventure.melonbox.feature.preview.data.SongItem
 import com.seoulventure.melonbox.feature.search.SearchScreenResult
 import com.seoulventure.melonbox.feature.search.navigateSearch
 import com.seoulventure.melonbox.ui.theme.BACKGROUND_PREVIEW
@@ -77,7 +76,7 @@ fun PlaylistPreviewScreen(
     appState: MelonBoxAppState,
     viewModel: PlaylistPreviewViewModel = hiltViewModel()
 ) {
-    val songList by viewModel.songList.collectAsStateWithLifecycle()
+    val playlistState by viewModel.playlistState.collectAsStateWithLifecycle()
     val selectedSong by viewModel.selectedSong.collectAsStateWithLifecycle()
 
     SideEffect {
@@ -87,10 +86,11 @@ fun PlaylistPreviewScreen(
         if (replaceResult != null) {
             viewModel.replaceSong(
                 targetSongId = replaceResult.targetSongId,
-                replaceSong = replaceResult.replaceSong
+                replaceSongItem = replaceResult.replaceSongItem
             )
         }
     }
+
 
     DisposableEffect(Unit) {
         onDispose {
@@ -98,38 +98,53 @@ fun PlaylistPreviewScreen(
         }
     }
 
-    PlaylistPreviewContent(
-        songList = songList,
-        selectedSong = selectedSong,
-        onClickSongItem = {
-            viewModel.selectSong(it)
-        },
-        onClickDelete = {
-            viewModel.deleteSelectedSong()
-        },
-        onClickReplace = {
-            appState.navController.navigateSearch(songId = it.id, keyword = it.name)
-        },
-        onClickConfirm = {
-            appState.navController.navigateComplete {
-                popUpTo(MAIN_ROUTE)
-            }
-        },
-        onClickCancel = {
-            appState.navController.popBackStack()
-        }
-    )
+    when (val state = playlistState) {
+        is PlayListState.Loading -> {
 
+        }
+
+        is PlayListState.Error -> {
+            state.t.printStackTrace()
+        }
+
+        is PlayListState.Success -> {
+            PlaylistPreviewContent(
+                songItemList = state.data,
+                selectedSongItem = selectedSong,
+                onClickSongItem = {
+                    viewModel.selectSong(it)
+                },
+                onClickDelete = {
+                    viewModel.deleteSelectedSong()
+                },
+                onClickReplace = {
+                    appState.navController.navigateSearch(songId = it.id, keyword = it.name)
+                },
+                onClickConfirm = {
+                    appState.navController.navigateComplete {
+                        popUpTo(MAIN_ROUTE)
+                    }
+                },
+                onClickCancel = {
+                    appState.navController.popBackStack()
+                }
+            )
+        }
+
+        is PlayListState.Init -> {
+
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaylistPreviewContent(
-    songList: ImmutableList<Song>,
-    selectedSong: Song?,
-    onClickSongItem: (Song) -> Unit,
-    onClickDelete: (Song) -> Unit,
-    onClickReplace: (Song) -> Unit,
+    songItemList: ImmutableList<SongItem>,
+    selectedSongItem: SongItem?,
+    onClickSongItem: (SongItem) -> Unit,
+    onClickDelete: (SongItem) -> Unit,
+    onClickReplace: (SongItem) -> Unit,
     onClickConfirm: Action,
     onClickCancel: Action,
 ) {
@@ -137,7 +152,7 @@ fun PlaylistPreviewContent(
     val bottomSheetState = rememberModalBottomSheetState()
     val coroutineScope = rememberCoroutineScope()
     var showBottomSheet: Boolean by remember {
-        mutableStateOf(selectedSong != null)
+        mutableStateOf(selectedSongItem != null)
     }
     var showDeleteAlertDialog: Boolean by remember {
         mutableStateOf(false)
@@ -160,7 +175,7 @@ fun PlaylistPreviewContent(
         Spacer(modifier = Modifier.size(16.dp))
         PlaylistPager(
             modifier = Modifier.weight(1f),
-            songList = songList,
+            songItemList = songItemList,
             onClickSongItem = {
                 showBottomSheet = true
                 onClickSongItem(it)
@@ -208,7 +223,7 @@ fun PlaylistPreviewContent(
                         }.invokeOnCompletion {
                             showBottomSheet = false
                         }
-                        onClickReplace(selectedSong!!)
+                        onClickReplace(selectedSongItem!!)
                     }) {
                     Text(
                         text = stringResource(id = R.string.action_replace),
@@ -238,7 +253,7 @@ fun PlaylistPreviewContent(
     if (showDeleteAlertDialog) {
         DeleteAlertDialog(
             onConfirmation = {
-                onClickDelete(selectedSong!!)
+                onClickDelete(selectedSongItem!!)
                 showDeleteAlertDialog = false
             },
             onDismissRequest = {
@@ -252,14 +267,14 @@ fun PlaylistPreviewContent(
 @Composable
 fun PlaylistPager(
     modifier: Modifier = Modifier,
-    songList: ImmutableList<Song>,
-    onClickSongItem: (Song) -> Unit
+    songItemList: ImmutableList<SongItem>,
+    onClickSongItem: (SongItem) -> Unit
 ) {
     //TODO 몇으로 해야하나..
     val visibleSongListCount = 6
 
     val pagerState = rememberPagerState {
-        ceil(songList.size / visibleSongListCount.toFloat()).toInt()
+        ceil(songItemList.size / visibleSongListCount.toFloat()).toInt()
     }
 
     //modifier.padding(horizontal = 18.dp, vertical = 25.dp)
@@ -282,11 +297,11 @@ fun PlaylistPager(
             val startIndex = index * visibleSongListCount
             val endIndex = startIndex + visibleSongListCount
             val visibleSongList =
-                songList.subList(
-                    startIndex.coerceIn(0, songList.lastIndex),
-                    endIndex.coerceIn(0, songList.size)
+                songItemList.subList(
+                    startIndex.coerceIn(0, songItemList.lastIndex),
+                    endIndex.coerceIn(0, songItemList.size)
                 )
-            PlaylistPage(songList = visibleSongList, onClickSongItem = onClickSongItem)
+            PlaylistPage(songItemList = visibleSongList, onClickSongItem = onClickSongItem)
         }
     }
 }
@@ -329,24 +344,24 @@ fun PlaylistPageIndicator(modifier: Modifier, currentPage: Int, totalPage: Int) 
 }
 
 @Composable
-fun PlaylistPage(songList: ImmutableList<Song>, onClickSongItem: (Song) -> Unit) {
+fun PlaylistPage(songItemList: ImmutableList<SongItem>, onClickSongItem: (SongItem) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 18.dp, vertical = 25.dp),
         verticalArrangement = Arrangement.spacedBy(13.dp),
     ) {
-        songList.forEach {
-            SongItem(song = it, onClickItem = onClickSongItem)
+        songItemList.forEach {
+            SongItem(songItem = it, onClickItem = onClickSongItem)
         }
     }
 }
 
 @Composable
-fun SongItem(song: Song, onClickItem: (Song) -> Unit) {
+fun SongItem(songItem: SongItem, onClickItem: (SongItem) -> Unit) {
     Row(
         modifier = Modifier
-            .clickable { onClickItem(song) }
+            .clickable { onClickItem(songItem) }
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -354,10 +369,15 @@ fun SongItem(song: Song, onClickItem: (Song) -> Unit) {
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            Text(text = song.name, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                text = songItem.name,
+                fontSize = 16.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
             Spacer(modifier = Modifier.size(5.dp))
             Text(
-                text = song.artistName,
+                text = songItem.artistName,
                 fontSize = 13.sp,
                 color = color_text_not_important,
                 maxLines = 1,
@@ -415,8 +435,8 @@ fun DeleteAlertDialogPreview() {
 )
 fun PlaylistPreviewPreview() {
     PlaylistPreviewContent(
-        songList = fakeSongList,
-        selectedSong = null,
+        songItemList = fakeSongListItems,
+        selectedSongItem = null,
         onClickSongItem = {},
         onClickReplace = {},
         onClickConfirm = {},
@@ -425,33 +445,33 @@ fun PlaylistPreviewPreview() {
     )
 }
 
-val fakeSongList
+val fakeSongListItems
     get() = listOf(
-        Song(
+        SongItem(
             name = "한숨이 나온다아아아아아아아아아아아아아아아아아아아아아아아아",
             artistName = "이하이이하이이하이이하이이하이이하이이하이이하이이하이이하이이하이이하이이하이이하이이하이이하이"
         ),
-        Song(
+        SongItem(
             name = "New Beginnings",
             artistName = "Jasmine Myra"
         ),
-        Song(
+        SongItem(
             name = "Blue",
             artistName = "Portraits in Jazz, Claus Waidtløw"
         ),
-        Song(
+        SongItem(
             name = "그대만 있다면 (여름날 우리 X 너드커넥션 (Nerd Connection))",
             artistName = "너드커넥션"
         ),
-        Song(
+        SongItem(
             name = "가까운 듯 먼 그대여 (Closely Far Away)",
             artistName = "카더가든"
         ),
-        Song(
+        SongItem(
             name = "네 생각",
             artistName = "존박"
         ),
-        Song(
+        SongItem(
             name = "ただ好きと言えたら",
             artistName = "KERENMI 및 Atarayo"
         ),

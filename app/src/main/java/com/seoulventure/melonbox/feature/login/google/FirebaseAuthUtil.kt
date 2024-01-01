@@ -10,7 +10,6 @@ import com.google.firebase.ktx.Firebase
 import com.seoulventure.melonbox.feature.login.data.FirebaseUserData
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
-import java.lang.IllegalStateException
 import java.util.concurrent.CountDownLatch
 
 

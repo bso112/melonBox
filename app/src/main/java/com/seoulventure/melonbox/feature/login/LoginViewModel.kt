@@ -3,7 +3,6 @@ package com.seoulventure.melonbox.feature.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.seoulventure.melonbox.data.YtMusicOAuthDataSource
-import com.seoulventure.melonbox.logE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -18,7 +17,7 @@ class LoginViewModel @Inject constructor(
         clientId: String,
         clientSecret: String,
         authorizationCode: String,
-        onSuccess: () -> Unit,
+        onSuccess: (String) -> Unit,
     ) {
         viewModelScope.launch {
             kotlin.runCatching {
@@ -28,7 +27,7 @@ class LoginViewModel @Inject constructor(
                     authorizationCode = authorizationCode
                 )
             }.onSuccess {
-                onSuccess()
+                onSuccess(it.accessToken ?: error("accessToken is null"))
             }.onFailure {
                 it.printStackTrace()
             }

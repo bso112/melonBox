@@ -2,7 +2,6 @@ package com.seoulventure.melonbox.feature.complete
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.navigation.NavOptions
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import com.seoulventure.melonbox.MelonBoxAppState

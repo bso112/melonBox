@@ -1,7 +1,5 @@
 package com.seoulventure.melonbox.feature.preview
 
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.tween
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
@@ -10,13 +8,17 @@ import com.seoulventure.melonbox.MelonBoxAppState
 
 
 private const val PLAYLIST_PREVIEW_ROUTE = "playlist_preview"
+const val ARG_MELON_PLAYLIST_URL = "ARG_MELON_PLAYLIST_URL"
 
-fun NavHostController.navigatePlaylistPreview(navOptions: NavOptions? = null) {
-    navigate(PLAYLIST_PREVIEW_ROUTE, navOptions)
+fun NavHostController.navigatePlaylistPreview(
+    melonPlaylistUrl: String,
+    navOptions: NavOptions? = null
+) {
+    navigate("$PLAYLIST_PREVIEW_ROUTE/$melonPlaylistUrl", navOptions)
 }
 
 fun NavGraphBuilder.playlistPreview(appState: MelonBoxAppState) {
-    composable(PLAYLIST_PREVIEW_ROUTE) {
+    composable("$PLAYLIST_PREVIEW_ROUTE/{$ARG_MELON_PLAYLIST_URL}") {
         PlaylistPreviewScreen(appState = appState)
     }
 }

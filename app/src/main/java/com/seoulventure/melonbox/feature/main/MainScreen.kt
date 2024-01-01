@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -34,8 +33,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.seoulventure.melonbox.Action
 import com.seoulventure.melonbox.Empty
 import com.seoulventure.melonbox.MelonBoxAppState
 import com.seoulventure.melonbox.R
@@ -50,13 +47,13 @@ import com.seoulventure.melonbox.ui.theme.stylelessTextFieldColors
 @Composable
 fun MainScreen(appState: MelonBoxAppState) {
     MainContent {
-        appState.navController.navigatePlaylistPreview()
+        appState.navController.navigatePlaylistPreview(it)
     }
 }
 
 @Composable
 fun MainContent(
-    onMelonDropAnimationEnd: Action,
+    onMelonDropAnimationEnd: (String) -> Unit,
 ) {
     var melonPlaylistUrl by remember { mutableStateOf(String.Empty) }
     var isButtonClicked by remember { mutableStateOf(false) }
@@ -70,12 +67,14 @@ fun MainContent(
     val melonAlpha by animateFloatAsState(
         animationSpec = tween(300),
         targetValue = if (isButtonClicked) 0f else 1f,
-        finishedListener = { onMelonDropAnimationEnd() },
+        finishedListener = { onMelonDropAnimationEnd(melonPlaylistUrl) },
         label = "melonAlpha"
     )
 
     Column(
-        modifier = Modifier.fillMaxSize().background(color_background),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color_background),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {

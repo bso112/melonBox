@@ -31,11 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.navOptions
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.seoulventure.melonbox.Action
 import com.seoulventure.melonbox.BuildConfig
 import com.seoulventure.melonbox.MelonBoxAppState
 import com.seoulventure.melonbox.R
+import com.seoulventure.melonbox.data.OAuthManager
 import com.seoulventure.melonbox.feature.login.google.registerForGoogleLoginResult
 import com.seoulventure.melonbox.feature.main.navigateMain
 import com.seoulventure.melonbox.logD
@@ -51,12 +51,13 @@ fun LoginScreen(
     val context = LocalContext.current
 
     val googleLoginLauncher = registerForGoogleLoginResult(
-        onSuccess = {
+        onSuccess = { authCode ->
             viewModel.getAccessToken(
                 clientId = BuildConfig.GOOGLE_OAUTH_CLIENT_ID,
                 clientSecret = BuildConfig.GOOGLE_OAUTH_CLIENT_SECRET,
-                authorizationCode = it
-            ) {
+                authorizationCode = authCode
+            ) { accessToken ->
+                OAuthManager.accessToken = accessToken
                 navigateMain(appState)
             }
         },

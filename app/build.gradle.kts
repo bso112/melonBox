@@ -3,6 +3,7 @@ import com.google.common.base.Charsets
 import java.util.Properties
 import java.io.InputStreamReader
 import java.io.FileInputStream
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
@@ -36,7 +37,8 @@ val googleOauthClientId: String =
     gradleProperties("apikey.properties").getProperty("GOOGLE_OAUTH_CLIENT_ID")
 val googleOauthClientSecret: String =
     gradleProperties("apikey.properties").getProperty("GOOGLE_OAUTH_CLIENT_SECRET")
-
+val googleApiKey: String =
+    gradleProperties("apikey.properties").getProperty("GOOGLE_API_KEY")
 
 android {
     namespace = "com.seoulventure.melonbox"
@@ -58,6 +60,7 @@ android {
 
         buildConfigField("String", "GOOGLE_OAUTH_CLIENT_ID", googleOauthClientId)
         buildConfigField("String", "GOOGLE_OAUTH_CLIENT_SECRET", googleOauthClientSecret)
+        buildConfigField("String", "GOOGLE_API_KEY", googleApiKey)
     }
 
     buildTypes {
@@ -102,7 +105,6 @@ dependencies {
 
     implementation(libs.bundles.ktor)
 
-    implementation("androidx.browser:browser:1.8.0-alpha01")
     implementation(platform("com.google.firebase:firebase-bom:30.2.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation(libs.play.services.auth)

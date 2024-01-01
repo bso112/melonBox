@@ -54,7 +54,7 @@ fun MelonBoxAppCompose(
             NavHost(
                 modifier = Modifier.padding(padding),
                 navController = appState.navController,
-                startDestination = if (GoogleSignIn.getLastSignedInAccount(context) == null) LOGIN_ROUTE else MAIN_ROUTE,
+                startDestination = LOGIN_ROUTE,
                 enterTransition = { EnterTransition.None },
                 exitTransition = { ExitTransition.None }
             ) {

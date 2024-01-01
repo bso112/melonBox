@@ -48,7 +48,7 @@ import androidx.navigation.NavController
 import com.seoulventure.melonbox.Action
 import com.seoulventure.melonbox.MelonBoxAppState
 import com.seoulventure.melonbox.R
-import com.seoulventure.melonbox.feature.preview.data.Song
+import com.seoulventure.melonbox.feature.preview.data.SongItem
 import com.seoulventure.melonbox.feature.search.data.SongSearchResult
 import com.seoulventure.melonbox.ui.theme.BACKGROUND_PREVIEW
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
@@ -66,24 +66,24 @@ class SearchScreenResult(
 ) {
     data class Argument(
         val targetSongId: String,
-        val replaceSong: Song
+        val replaceSongItem: SongItem
     )
 
     fun setResult(argument: Argument) {
         navController.previousBackStackEntry?.savedStateHandle?.apply {
             set(KEY_TARGET_SONG, argument.targetSongId)
-            set(KEY_REPLACE_SONG, argument.replaceSong)
+            set(KEY_REPLACE_SONG, argument.replaceSongItem)
         }
     }
 
     fun getResult(): Argument? {
         return navController.currentBackStackEntry?.savedStateHandle?.run {
             val targetSongId = get<String>(KEY_TARGET_SONG)
-            val replaceSong = get<Parcelable>(KEY_REPLACE_SONG) as? Song
-            if (targetSongId == null || replaceSong == null) return null
+            val replaceSongItem = get<Parcelable>(KEY_REPLACE_SONG) as? SongItem
+            if (targetSongId == null || replaceSongItem == null) return null
             Argument(
                 targetSongId = targetSongId,
-                replaceSong = replaceSong
+                replaceSongItem = replaceSongItem
             )
         }
     }
@@ -113,7 +113,7 @@ fun SearchScreen(
             SearchScreenResult(appState.navController).setResult(
                 SearchScreenResult.Argument(
                     targetSongId = viewModel.targetSongId,
-                    replaceSong = Song(name = it.songName, artistName = it.artistName)
+                    replaceSongItem = SongItem(name = it.songName, artistName = it.artistName)
                 )
             )
             appState.navController.popBackStack()
