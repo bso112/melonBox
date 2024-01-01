@@ -1,6 +1,5 @@
 package com.seoulventure.melonbox.feature.search
 
-import android.os.Parcelable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.seoulventure.melonbox.Action
 import com.seoulventure.melonbox.MelonBoxAppState
 import com.seoulventure.melonbox.R
@@ -67,28 +65,49 @@ fun SearchScreen(
     viewModel: SearchViewModel = hiltViewModel()
 ) {
 
-    val searchResultList by viewModel.searchResultList.collectAsStateWithLifecycle()
+    val searchState by viewModel.searchState.collectAsStateWithLifecycle()
     val searchKeyWord by viewModel.searchKeyWord.collectAsStateWithLifecycle()
 
-    SearchContent(
-        searchResultList = searchResultList,
-        searchKeyWord = searchKeyWord,
-        onKeyWordChanged = {
-            viewModel.updateKeyword(it)
-        },
-        onClickSelect = {
-            SearchScreenResult(appState.navController).setResult(
-                SearchScreenResult.Argument(
-                    targetSongId = viewModel.targetSongId,
-                    replaceSongItem = SongItem(name = it.songName, artistName = it.artistName)
-                )
-            )
-            appState.navController.popBackStack()
-        },
-        onClickSearch = {
-            viewModel.search()
+    when (val state = searchState) {
+        is SearchState.Init -> {
+
         }
-    )
+
+        is SearchState.Success -> {
+            SearchContent(
+                searchResultList = state.data,
+                searchKeyWord = searchKeyWord,
+                onKeyWordChanged = {
+                    viewModel.updateKeyword(it)
+                },
+                onClickSelect = {
+                    SearchScreenResult(appState.navController).setResult(
+                        SearchScreenResult.Argument(
+                            targetSongId = viewModel.targetSongId,
+                            replaceSongItem = SongItem(
+                                name = it.songName,
+                                artistName = it.artistName
+                            )
+                        )
+                    )
+                    appState.navController.popBackStack()
+                },
+                onClickSearch = {
+                    viewModel.search()
+                }
+            )
+        }
+
+        is SearchState.Loading -> {
+
+        }
+
+        is SearchState.Error -> {
+
+        }
+    }
+
+
 }
 
 @Composable

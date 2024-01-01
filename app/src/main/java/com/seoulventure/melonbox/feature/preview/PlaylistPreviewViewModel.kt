@@ -3,6 +3,7 @@ package com.seoulventure.melonbox.feature.preview
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.seoulventure.melonbox.Empty
 import com.seoulventure.melonbox.domain.GetYtPlaylistUseCase
 import com.seoulventure.melonbox.domain.Song
 import com.seoulventure.melonbox.feature.preview.data.SongItem
@@ -37,16 +38,16 @@ class PlaylistPreviewViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            savedStateHandle.getStateFlow(ARG_MELON_PLAYLIST_URL, "")
+            savedStateHandle.getStateFlow(ARG_MELON_PLAYLIST_URL, String.Empty)
                 .filter { it.isNotBlank() }
-                .onStart { _playlistState.update { PlayListState.Loading } }
-                .map { getYtPlaylistUseCase(it).map(Song::toUIModel).toImmutableList() }
-                .catch { error -> _playlistState.update { PlayListState.Error(error) } }
-                .collect { list ->
-                    _playlistState.update { PlayListState.Success(list) }
+                .map<String, PlayListState> {
+                    getYtPlaylistUseCase(it).map(Song::toUIModel).toImmutableList()
+                        .let(PlayListState::Success)
                 }
+                .onStart { emit(PlayListState.Loading) }
+                .catch { emit(PlayListState.Error(it)) }
+                .collect { _playlistState.value = it }
         }
-
     }
 
     fun clearSelectedSong() {
