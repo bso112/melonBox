@@ -1,5 +1,6 @@
 package com.seoulventure.melonbox.feature.search
 
+import android.net.Uri
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
@@ -17,7 +18,7 @@ fun NavHostController.navigateSearch(
     keyword: String,
     navOptions: NavOptions? = null
 ) {
-    navigate("$SEARCH_ROUTE/$songId/$keyword", navOptions)
+    navigate("$SEARCH_ROUTE/$songId/${Uri.encode(keyword)}", navOptions)
 }
 
 fun NavGraphBuilder.searchScreen(appState: MelonBoxAppState) {

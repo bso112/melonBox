@@ -3,7 +3,7 @@ package com.seoulventure.melonbox.feature.preview
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.seoulventure.melonbox.domain.GetYoutubePlaylistUseCase
+import com.seoulventure.melonbox.domain.GetYtPlaylistUseCase
 import com.seoulventure.melonbox.domain.Song
 import com.seoulventure.melonbox.feature.preview.data.SongItem
 import com.seoulventure.melonbox.feature.preview.data.toUIModel
@@ -26,7 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class PlaylistPreviewViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val getYoutubePlaylistUseCase: GetYoutubePlaylistUseCase
+    private val getYtPlaylistUseCase: GetYtPlaylistUseCase
 ) : ViewModel() {
 
     private val _selectedSongItem = MutableStateFlow<SongItem?>(null)
@@ -40,7 +40,7 @@ class PlaylistPreviewViewModel @Inject constructor(
             savedStateHandle.getStateFlow(ARG_MELON_PLAYLIST_URL, "")
                 .filter { it.isNotBlank() }
                 .onStart { _playlistState.update { PlayListState.Loading } }
-                .map { getYoutubePlaylistUseCase(it).map(Song::toUIModel).toImmutableList() }
+                .map { getYtPlaylistUseCase(it).map(Song::toUIModel).toImmutableList() }
                 .catch { error -> _playlistState.update { PlayListState.Error(error) } }
                 .collect { list ->
                     _playlistState.update { PlayListState.Success(list) }

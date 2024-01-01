@@ -1,7 +1,6 @@
 package com.seoulventure.melonbox.data
 
 import com.seoulventure.melonbox.BuildConfig
-import com.seoulventure.melonbox.data.response.YtSearchItem
 import com.seoulventure.melonbox.data.response.YtSearchResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -13,15 +12,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class YoutubeDataSource @Inject constructor(
+class YtDataSource @Inject constructor(
     private val client: HttpClient
 ) {
 
-    suspend fun search(keyword: String): YtSearchResponse {
+    suspend fun search(keyword: String, maxResult: Int = 1): YtSearchResponse {
         val token = OAuthManager.accessToken ?: error("accessToken not available")
         return client.get("https://www.googleapis.com/youtube/v3/search") {
             parameter("part", "snippet")
-            parameter("maxResults", 25)
+            parameter("maxResults", maxResult)
             parameter("q", keyword)
             parameter("key", BuildConfig.GOOGLE_API_KEY)
             headers {

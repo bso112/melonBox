@@ -8,8 +8,10 @@ data class Song(
     val artistName: String
 )
 
-fun YtSearchItem.toDomain() = Song(
-    id = checkNotNull(id?.videoId),
-    name = checkNotNull(snippet?.title),
-    artistName = checkNotNull(snippet?.description)
-)
+fun YtSearchItem.toDomain() = kotlin.runCatching {
+    Song(
+        id = checkNotNull(id?.videoId),
+        name = checkNotNull(snippet?.title),
+        artistName = checkNotNull(snippet?.description)
+    )
+}.getOrNull()

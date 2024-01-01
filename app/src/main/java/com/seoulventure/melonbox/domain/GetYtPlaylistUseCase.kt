@@ -1,8 +1,7 @@
 package com.seoulventure.melonbox.domain
 
 import com.seoulventure.melonbox.data.MelonDataSource
-import com.seoulventure.melonbox.data.YoutubeDataSource
-import com.seoulventure.melonbox.data.response.YtSearchItem
+import com.seoulventure.melonbox.data.YtDataSource
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -10,9 +9,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GetYoutubePlaylistUseCase @Inject constructor(
+class GetYtPlaylistUseCase @Inject constructor(
     private val melonDataSource: MelonDataSource,
-    private val ytDataSource: YoutubeDataSource
+    private val ytDataSource: YtDataSource
 ) {
     suspend operator fun invoke(melonPlaylistUrl: String): List<Song> {
         return coroutineScope {
