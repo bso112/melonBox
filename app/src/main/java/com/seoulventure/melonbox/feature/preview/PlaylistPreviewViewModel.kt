@@ -8,17 +8,19 @@ import com.seoulventure.melonbox.domain.GetYtPlaylistUseCase
 import com.seoulventure.melonbox.domain.Song
 import com.seoulventure.melonbox.feature.preview.data.SongItem
 import com.seoulventure.melonbox.feature.preview.data.toUIModel
-import com.seoulventure.melonbox.ifIs
 import com.seoulventure.melonbox.newList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -33,20 +35,20 @@ class PlaylistPreviewViewModel @Inject constructor(
     private val _selectedSongItem = MutableStateFlow<SongItem?>(null)
     val selectedSong = _selectedSongItem.asStateFlow()
 
-    private val _playlistState = MutableStateFlow<PlayListState>(PlayListState.Init)
-    val playlistState: StateFlow<PlayListState> = _playlistState.asStateFlow()
+    private val _playlistState = MutableStateFlow(PlayListUiState())
+    val playlistState: StateFlow<PlayListUiState> = _playlistState.asStateFlow()
 
     init {
         viewModelScope.launch {
             savedStateHandle.getStateFlow(ARG_MELON_PLAYLIST_URL, String.Empty)
                 .filter { it.isNotBlank() }
-                .map<String, PlayListState> {
+                .map {
                     getYtPlaylistUseCase(it).map(Song::toUIModel).toImmutableList()
-                        .let(PlayListState::Success)
                 }
-                .onStart { emit(PlayListState.Loading) }
-                .catch { emit(PlayListState.Error(it)) }
-                .collect { _playlistState.value = it }
+                .onStart { _playlistState.update { it.loading() } }
+                .onEach { data -> _playlistState.update { it.valid(data) } }
+                .catch { e -> _playlistState.update { it.error(e) } }
+                .collect()
         }
     }
 
@@ -59,29 +61,27 @@ class PlaylistPreviewViewModel @Inject constructor(
     }
 
     fun replaceSong(targetSongId: String, replaceSongItem: SongItem) {
-        playlistState.value.ifIs<PlayListState.Success> { state ->
-            val newList =
-                state.data.newList { replaceAll { if (it.id == targetSongId) replaceSongItem else it } }
-            _playlistState.update { state.copy(data = newList) }
-            if (_selectedSongItem.value?.id == targetSongId) {
-                _selectedSongItem.update { replaceSongItem }
-            }
-        }
+        val newList =
+            _playlistState.value.data.newList { replaceAll { if (it.id == targetSongId) replaceSongItem else it } }
+        _playlistState.update { it.valid(newList) }
+        _selectedSongItem.update { replaceSongItem }
     }
 
 
     fun deleteSelectedSong() {
-        playlistState.value.ifIs<PlayListState.Success> { state ->
-            val newList = state.data.newList { remove(_selectedSongItem.value) }
-            _playlistState.update { state.copy(data = newList) }
-            _selectedSongItem.update { null }
-        }
+        val newList = _playlistState.value.data.newList { remove(_selectedSongItem.value) }
+        _playlistState.update { it.valid(data = newList) }
+        _selectedSongItem.update { null }
     }
 }
 
-sealed interface PlayListState {
-    data class Error(val t: Throwable) : PlayListState
-    object Loading : PlayListState
-    object Init : PlayListState
-    data class Success(val data: ImmutableList<SongItem>) : PlayListState
+data class PlayListUiState(
+    val error: Throwable? = null,
+    val isLoading: Boolean = false,
+    val data: ImmutableList<SongItem> = persistentListOf(),
+) {
+    fun loading() = copy(isLoading = true)
+    fun error(t: Throwable): PlayListUiState = copy(error = t, isLoading = false)
+    fun valid(data: ImmutableList<SongItem>) = copy(data = data, isLoading = false, error = null)
 }
+

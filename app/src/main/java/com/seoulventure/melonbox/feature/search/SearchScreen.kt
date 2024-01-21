@@ -24,6 +24,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -65,49 +67,41 @@ fun SearchScreen(
     viewModel: SearchViewModel = hiltViewModel()
 ) {
 
+    val context = LocalContext.current
     val searchState by viewModel.searchState.collectAsStateWithLifecycle()
     val searchKeyWord by viewModel.searchKeyWord.collectAsStateWithLifecycle()
 
-    when (val state = searchState) {
-        is SearchState.Init -> {
-
-        }
-
-        is SearchState.Success -> {
-            SearchContent(
-                searchResultList = state.data,
-                searchKeyWord = searchKeyWord,
-                onKeyWordChanged = {
-                    viewModel.updateKeyword(it)
-                },
-                onClickSelect = {
-                    SearchScreenResult(appState.navController).setResult(
-                        SearchScreenResult.Argument(
-                            targetSongId = viewModel.targetSongId,
-                            replaceSongItem = SongItem(
-                                name = it.songName,
-                                artistName = it.artistName
-                            )
-                        )
-                    )
-                    appState.navController.popBackStack()
-                },
-                onClickSearch = {
-                    viewModel.search()
-                }
-            )
-        }
-
-        is SearchState.Loading -> {
-
-        }
-
-        is SearchState.Error -> {
-
+    LaunchedEffect(searchState.error) {
+        if (searchState.error != null) {
+            appState.snackBarHostState.showSnackbar(context.getString(R.string.msg_network_error))
         }
     }
 
+    if (searchState.data.isNotEmpty()) {
+        SearchContent(
+            searchResultList = searchState.data,
+            searchKeyWord = searchKeyWord,
+            onKeyWordChanged = {
+                viewModel.updateKeyword(it)
+            },
 
+            onClickSelect = {
+                SearchScreenResult(appState.navController).setResult(
+                    SearchScreenResult.Argument(
+                        targetSongId = viewModel.targetSongId,
+                        replaceSongItem = SongItem(
+                            name = it.songName,
+                            artistName = it.artistName
+                        )
+                    )
+                )
+                appState.navController.popBackStack()
+            },
+            onClickSearch = {
+                viewModel.search()
+            }
+        )
+    }
 }
 
 @Composable

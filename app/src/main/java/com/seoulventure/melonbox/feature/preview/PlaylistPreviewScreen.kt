@@ -98,42 +98,33 @@ fun PlaylistPreviewScreen(
         }
     }
 
-    when (val state = playlistState) {
-        is PlayListState.Loading -> {
+    val error = playlistState.error
+    LaunchedEffect(error) {
+        error?.printStackTrace()
+    }
 
-        }
-
-        is PlayListState.Error -> {
-            state.t.printStackTrace()
-        }
-
-        is PlayListState.Success -> {
-            PlaylistPreviewContent(
-                songItemList = state.data,
-                selectedSongItem = selectedSong,
-                onClickSongItem = {
-                    viewModel.selectSong(it)
-                },
-                onClickDelete = {
-                    viewModel.deleteSelectedSong()
-                },
-                onClickReplace = {
-                    appState.navController.navigateSearch(songId = it.id, keyword = it.name)
-                },
-                onClickConfirm = {
-                    appState.navController.navigateComplete {
-                        popUpTo(MAIN_ROUTE)
-                    }
-                },
-                onClickCancel = {
-                    appState.navController.popBackStack()
+    if (playlistState.data.isNotEmpty()) {
+        PlaylistPreviewContent(
+            songItemList = playlistState.data,
+            selectedSongItem = selectedSong,
+            onClickSongItem = {
+                viewModel.selectSong(it)
+            },
+            onClickDelete = {
+                viewModel.deleteSelectedSong()
+            },
+            onClickReplace = {
+                appState.navController.navigateSearch(songId = it.id, keyword = it.name)
+            },
+            onClickConfirm = {
+                appState.navController.navigateComplete {
+                    popUpTo(MAIN_ROUTE)
                 }
-            )
-        }
-
-        is PlayListState.Init -> {
-
-        }
+            },
+            onClickCancel = {
+                appState.navController.popBackStack()
+            }
+        )
     }
 }
 

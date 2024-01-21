@@ -11,6 +11,7 @@ import com.seoulventure.melonbox.feature.search.data.SongSearchUIModel
 import com.seoulventure.melonbox.feature.search.data.toSearchUIModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,10 +48,10 @@ class SearchViewModel @Inject constructor(
         merge(initialKeyword, searchEvent).map<String, SearchState> { keyword ->
             searchYtSongUseCase.invoke(keyword, MAX_SEARCH_SIZE)
                 .map(Song::toSearchUIModel).toImmutableList()
-                .let(SearchState::Success)
-        }.onStart { emit(SearchState.Loading) }
-            .catch { emit(SearchState.Error(it)) }
-            .stateIn(viewModelScope, SharingStarted.Eagerly, SearchState.Init)
+                .let { SearchState(data = it) }
+        }.onStart { emit(SearchState(isLoading = true)) }
+            .catch { emit(SearchState(error = it)) }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, SearchState())
 
 
     fun updateKeyword(keyword: String) {
@@ -68,10 +69,8 @@ class SearchViewModel @Inject constructor(
     }
 }
 
-sealed interface SearchState {
-
-    object Init : SearchState
-    object Loading : SearchState
-    data class Error(val t: Throwable) : SearchState
-    data class Success(val data: ImmutableList<SongSearchUIModel>) : SearchState
-}
+data class SearchState(
+    val data: ImmutableList<SongSearchUIModel> = persistentListOf(),
+    val error: Throwable? = null,
+    val isLoading: Boolean = false
+)
