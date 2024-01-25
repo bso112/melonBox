@@ -9,7 +9,6 @@ import com.seoulventure.melonbox.domain.GetYtPlaylistUseCase
 import com.seoulventure.melonbox.domain.Song
 import com.seoulventure.melonbox.feature.preview.data.SongItem
 import com.seoulventure.melonbox.feature.preview.data.toUIModel
-import com.seoulventure.melonbox.logD
 import com.seoulventure.melonbox.logE
 import com.seoulventure.melonbox.newList
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -88,8 +87,11 @@ class PlaylistPreviewViewModel @Inject constructor(
     fun createPlaylist(playlistTitle: String) {
         viewModelScope.launch {
             try {
-                createPlaylistUseCase(playlistTitle)
-                _uiEvent.emit(UIEvent.NavigateComplete)
+                val insertedMusicCount = createPlaylistUseCase(
+                    playListTitle = playlistTitle,
+                    videoIdList = playlistState.value.data.map { it.id })
+
+                _uiEvent.emit(UIEvent.NavigateComplete(insertedMusicCount))
             } catch (e: Exception) {
                 _uiEvent.emit(UIEvent.Error(e))
                 logE(e.message.toString())
@@ -117,6 +119,6 @@ data class PlayListUiState(
 
 sealed interface UIEvent {
     data class Error(val t: Throwable) : UIEvent
-    object NavigateComplete : UIEvent
+    data class NavigateComplete(val insertedMusicCount: Int) : UIEvent
 }
 

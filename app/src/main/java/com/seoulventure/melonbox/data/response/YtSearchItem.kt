@@ -9,12 +9,12 @@ data class YtSearchResponse(
 
 @Serializable
 data class YtSearchItem(
-    val id: YtId? = null,
+    val id: YtResourceId? = null,
     val snippet: YtSnippet? = null,
 )
 
 @Serializable
-data class YtId(
+data class YtResourceId(
     val kind: String? = null,
     val videoId: String? = null,
     val channelId: String? = null,

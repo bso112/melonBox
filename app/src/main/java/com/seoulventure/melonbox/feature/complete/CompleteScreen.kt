@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -42,11 +43,13 @@ private const val PACKAGE_YT_MUSIC = "com.google.android.apps.youtube.music"
 
 @Composable
 fun CompleteScreen(
-    appState: MelonBoxAppState
+    appState: MelonBoxAppState,
+    insertedSongCount: Int,
 ) {
     val context = LocalContext.current
 
     CompleteContent(
+        insertedSongCount = insertedSongCount,
         onClickBack = {
             appState.navController.popBackStack()
         },
@@ -72,6 +75,7 @@ fun CompleteScreen(
 
 @Composable
 private fun CompleteContent(
+    insertedSongCount: Int,
     onClickBack: Action,
     onClickDone: Action
 ) {
@@ -87,6 +91,11 @@ private fun CompleteContent(
                 stringResource(id = R.string.msg_complete),
                 fontSize = 48.sp,
                 fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.size(10.dp))
+            Text(
+                stringResource(id = R.string.msg_complete_sub, insertedSongCount),
+                color = Color.DarkGray
             )
             Spacer(modifier = Modifier.size(82.dp))
             Image(
@@ -122,6 +131,7 @@ private fun CompleteContent(
 fun CompleteContentPreview() {
     MelonBoxTheme {
         CompleteContent(
+            insertedSongCount = 3,
             onClickBack = {},
             onClickDone = {}
         )

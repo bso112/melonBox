@@ -8,16 +8,23 @@ import com.seoulventure.melonbox.MelonBoxAppState
 
 
 private const val COMPLETE_ROUTE = "complete"
+const val ARG_INSERTED_SONG_COUNT = "ARG_INSERTED_SONG_COUNT"
 
-fun NavHostController.navigateComplete(builder: (NavOptionsBuilder.() -> Unit)?) {
-    navigate(COMPLETE_ROUTE) {
+fun NavHostController.navigateComplete(
+    insertedSongCount: Int,
+    builder: (NavOptionsBuilder.() -> Unit)?
+) {
+    navigate("$COMPLETE_ROUTE/$insertedSongCount") {
         builder?.invoke(this)
     }
 
 }
 
 fun NavGraphBuilder.completeScreen(appState: MelonBoxAppState) {
-    composable(COMPLETE_ROUTE) {
-        CompleteScreen(appState = appState)
+    composable("$COMPLETE_ROUTE/{$ARG_INSERTED_SONG_COUNT}") {
+        CompleteScreen(
+            appState = appState,
+            insertedSongCount = it.arguments?.getInt(ARG_INSERTED_SONG_COUNT) ?: 0
+        )
     }
 }

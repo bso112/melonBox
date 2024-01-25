@@ -114,7 +114,11 @@ fun PlaylistPreviewScreen(
                     }
 
                     is UIEvent.NavigateComplete -> {
-                        appState.navController.navigateComplete { popUpTo(MAIN_ROUTE) }
+                        appState.navController.navigateComplete(uiEvent.insertedMusicCount) {
+                            popUpTo(
+                                MAIN_ROUTE
+                            )
+                        }
                     }
                 }
             }

@@ -2,9 +2,12 @@ package com.seoulventure.melonbox.data
 
 import com.seoulventure.melonbox.BuildConfig
 import com.seoulventure.melonbox.data.request.CreatePlaylistRequest
+import com.seoulventure.melonbox.data.request.InsertSongInPlaylistRequest
+import com.seoulventure.melonbox.data.request.InsertSongInPlaylistSnippet
 import com.seoulventure.melonbox.data.request.PlaylistSnippet
 import com.seoulventure.melonbox.data.request.PlaylistStatus
 import com.seoulventure.melonbox.data.response.CreatePlaylistResponse
+import com.seoulventure.melonbox.data.response.YtResourceId
 import com.seoulventure.melonbox.data.response.YtSearchResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -56,5 +59,25 @@ class YtDataSource @Inject constructor(
                 )
             )
         }.body()
+    }
+
+    suspend fun insertSongInPlaylist(playlistId: String, position : Int, videoId: String) {
+        val token = OAuthManager.accessToken ?: error("accessToken not available")
+        client.post("https://www.googleapis.com/youtube/v3/playlistItems") {
+            headers {
+                append(HttpHeaders.Accept, "application/json")
+                append(HttpHeaders.Authorization, "Bearer $token")
+            }
+            parameter("part", "snippet,status")
+            setBody(
+                InsertSongInPlaylistRequest(
+                    InsertSongInPlaylistSnippet(
+                        playlistId = playlistId,
+                        position = position,
+                        resourceId = YtResourceId(kind = "youtube#video", videoId = videoId)
+                    )
+                )
+            )
+        }
     }
 }
