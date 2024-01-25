@@ -4,20 +4,26 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.seoulventure.melonbox.Empty
+import com.seoulventure.melonbox.domain.CreatePlaylistUseCase
 import com.seoulventure.melonbox.domain.GetYtPlaylistUseCase
 import com.seoulventure.melonbox.domain.Song
 import com.seoulventure.melonbox.feature.preview.data.SongItem
 import com.seoulventure.melonbox.feature.preview.data.toUIModel
+import com.seoulventure.melonbox.logD
+import com.seoulventure.melonbox.logE
 import com.seoulventure.melonbox.newList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -29,7 +35,8 @@ import javax.inject.Inject
 @HiltViewModel
 class PlaylistPreviewViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val getYtPlaylistUseCase: GetYtPlaylistUseCase
+    private val getYtPlaylistUseCase: GetYtPlaylistUseCase,
+    private val createPlaylistUseCase: CreatePlaylistUseCase,
 ) : ViewModel() {
 
     private val _selectedSongItem = MutableStateFlow<SongItem?>(null)
@@ -37,6 +44,9 @@ class PlaylistPreviewViewModel @Inject constructor(
 
     private val _playlistState = MutableStateFlow(PlayListUiState())
     val playlistState: StateFlow<PlayListUiState> = _playlistState.asStateFlow()
+
+    private val _uiEvent = MutableSharedFlow<UIEvent>()
+    val uiEvent = _uiEvent.asSharedFlow()
 
     init {
         viewModelScope.launch {
@@ -49,6 +59,14 @@ class PlaylistPreviewViewModel @Inject constructor(
                 .onEach { data -> _playlistState.update { it.valid(data) } }
                 .catch { e -> _playlistState.update { it.error(e) } }
                 .collect()
+        }
+
+        viewModelScope.launch {
+            playlistState.collectLatest {
+                if (it.error != null) {
+                    _uiEvent.emit(UIEvent.Error(it.error))
+                }
+            }
         }
     }
 
@@ -67,6 +85,18 @@ class PlaylistPreviewViewModel @Inject constructor(
         _selectedSongItem.update { replaceSongItem }
     }
 
+    fun createPlaylist(playlistTitle: String) {
+        viewModelScope.launch {
+            try {
+                createPlaylistUseCase(playlistTitle)
+                _uiEvent.emit(UIEvent.NavigateComplete)
+            } catch (e: Exception) {
+                _uiEvent.emit(UIEvent.Error(e))
+                logE(e.message.toString())
+            }
+        }
+    }
+
 
     fun deleteSelectedSong() {
         val newList = _playlistState.value.data.newList { remove(_selectedSongItem.value) }
@@ -83,5 +113,10 @@ data class PlayListUiState(
     fun loading() = copy(isLoading = true)
     fun error(t: Throwable): PlayListUiState = copy(error = t, isLoading = false)
     fun valid(data: ImmutableList<SongItem>) = copy(data = data, isLoading = false, error = null)
+}
+
+sealed interface UIEvent {
+    data class Error(val t: Throwable) : UIEvent
+    object NavigateComplete : UIEvent
 }
 

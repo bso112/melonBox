@@ -7,6 +7,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.Scope
 
 class GoogleSignInContract(
     private val onFailure: (Throwable) -> Unit,
@@ -15,6 +16,7 @@ class GoogleSignInContract(
     override fun createIntent(context: Context, input: String): Intent {
         return GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestServerAuthCode(input)
+            .requestScopes(Scope("https://www.googleapis.com/auth/youtube"))
             .requestEmail()
             .build()
             .let {

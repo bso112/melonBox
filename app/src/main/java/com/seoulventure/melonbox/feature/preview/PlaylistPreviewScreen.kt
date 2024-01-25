@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -44,7 +45,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.seoulventure.melonbox.Action
 import com.seoulventure.melonbox.MelonBoxAppState
 import com.seoulventure.melonbox.R
@@ -66,6 +69,7 @@ import com.seoulventure.melonbox.ui.theme.color_text_not_important
 import com.seoulventure.melonbox.ui.theme.color_warning
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.ceil
@@ -76,6 +80,7 @@ fun PlaylistPreviewScreen(
     appState: MelonBoxAppState,
     viewModel: PlaylistPreviewViewModel = hiltViewModel()
 ) {
+    val lifecycleOwner = LocalLifecycleOwner.current
     val playlistState by viewModel.playlistState.collectAsStateWithLifecycle()
     val selectedSong by viewModel.selectedSong.collectAsStateWithLifecycle()
 
@@ -98,9 +103,22 @@ fun PlaylistPreviewScreen(
         }
     }
 
-    val error = playlistState.error
-    LaunchedEffect(error) {
-        error?.printStackTrace()
+
+    LaunchedEffect(Unit) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.uiEvent.collectLatest { uiEvent ->
+                when (uiEvent) {
+                    is UIEvent.Error -> {
+                        appState.snackBarHostState.showSnackbar("에러가 발생했습니다")
+                        uiEvent.t.printStackTrace()
+                    }
+
+                    is UIEvent.NavigateComplete -> {
+                        appState.navController.navigateComplete { popUpTo(MAIN_ROUTE) }
+                    }
+                }
+            }
+        }
     }
 
     if (playlistState.data.isNotEmpty()) {
@@ -117,9 +135,7 @@ fun PlaylistPreviewScreen(
                 appState.navController.navigateSearch(songId = it.id, keyword = it.name)
             },
             onClickConfirm = {
-                appState.navController.navigateComplete {
-                    popUpTo(MAIN_ROUTE)
-                }
+                viewModel.createPlaylist("test playlist")
             },
             onClickCancel = {
                 appState.navController.popBackStack()
