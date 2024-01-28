@@ -58,6 +58,7 @@ import com.seoulventure.melonbox.feature.preview.data.SongItem
 import com.seoulventure.melonbox.feature.search.SearchScreenResult
 import com.seoulventure.melonbox.feature.search.navigateSearch
 import com.seoulventure.melonbox.ui.theme.BackgroundPreviewColor
+import com.seoulventure.melonbox.ui.theme.LoadingView
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
 import com.seoulventure.melonbox.ui.theme.StaticMelonButton
 import kotlinx.collections.immutable.ImmutableList
@@ -77,6 +78,7 @@ fun PlaylistPreviewScreen(
     val context = LocalContext.current
     val playlistState by viewModel.playlistState.collectAsStateWithLifecycle()
     val selectedSong by viewModel.selectedSong.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
     SideEffect {
         val replaceResult = SearchScreenResult(appState.navController)
@@ -122,26 +124,31 @@ fun PlaylistPreviewScreen(
         }
     }
 
-    if (playlistState.data.isNotEmpty()) {
-        PlaylistPreviewContent(
-            songItemList = playlistState.data,
-            selectedSongItem = selectedSong,
-            onClickSongItem = {
-                viewModel.selectSong(it)
-            },
-            onClickDelete = {
-                viewModel.deleteSelectedSong()
-            },
-            onClickReplace = {
-                appState.navController.navigateSearch(songId = it.id, keyword = it.name)
-            },
-            onClickConfirm = {
-                viewModel.createPlaylist("test playlist")
-            },
-            onClickCancel = {
-                appState.navController.popBackStack()
-            }
-        )
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (playlistState.data.isNotEmpty()) {
+            PlaylistPreviewContent(
+                songItemList = playlistState.data,
+                selectedSongItem = selectedSong,
+                onClickSongItem = {
+                    viewModel.selectSong(it)
+                },
+                onClickDelete = {
+                    viewModel.deleteSelectedSong()
+                },
+                onClickReplace = {
+                    appState.navController.navigateSearch(songId = it.id, keyword = it.name)
+                },
+                onClickConfirm = {
+                    viewModel.createPlaylist("test playlist")
+                },
+                onClickCancel = {
+                    appState.navController.popBackStack()
+                }
+            )
+        }
+        if (isLoading) {
+            LoadingView(modifier = Modifier.align(Alignment.Center))
+        }
     }
 }
 

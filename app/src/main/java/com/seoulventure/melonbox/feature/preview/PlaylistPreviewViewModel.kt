@@ -44,6 +44,9 @@ class PlaylistPreviewViewModel @Inject constructor(
     private val _playlistState = MutableStateFlow(PlayListUiState())
     val playlistState: StateFlow<PlayListUiState> = _playlistState.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading.asStateFlow()
+
     private val _uiEvent = MutableSharedFlow<UIEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
 
@@ -54,9 +57,15 @@ class PlaylistPreviewViewModel @Inject constructor(
                 .map {
                     getYtPlaylistUseCase(it).map(Song::toUIModel).toImmutableList()
                 }
-                .onStart { _playlistState.update { it.loading() } }
-                .onEach { data -> _playlistState.update { it.valid(data) } }
-                .catch { e -> _playlistState.update { it.error(e) } }
+                .onStart { _isLoading.update { true } }
+                .onEach { data ->
+                    _isLoading.update { false }
+                    _playlistState.update { it.valid(data) }
+                }
+                .catch { e ->
+                    _isLoading.update { false }
+                    _playlistState.update { it.error(e) }
+                }
                 .collect()
         }
 
@@ -86,6 +95,7 @@ class PlaylistPreviewViewModel @Inject constructor(
 
     fun createPlaylist(playlistTitle: String) {
         viewModelScope.launch {
+            _isLoading.update { true }
             try {
                 val insertedMusicCount = createPlaylistUseCase(
                     playListTitle = playlistTitle,
@@ -96,6 +106,7 @@ class PlaylistPreviewViewModel @Inject constructor(
                 _uiEvent.emit(UIEvent.Error(e))
                 logE(e.message.toString())
             }
+            _isLoading.update { false }
         }
     }
 
@@ -109,12 +120,10 @@ class PlaylistPreviewViewModel @Inject constructor(
 
 data class PlayListUiState(
     val error: Throwable? = null,
-    val isLoading: Boolean = false,
     val data: ImmutableList<SongItem> = persistentListOf(),
 ) {
-    fun loading() = copy(isLoading = true)
-    fun error(t: Throwable): PlayListUiState = copy(error = t, isLoading = false)
-    fun valid(data: ImmutableList<SongItem>) = copy(data = data, isLoading = false, error = null)
+    fun error(t: Throwable): PlayListUiState = copy(error = t)
+    fun valid(data: ImmutableList<SongItem>) = copy(data = data, error = null)
 }
 
 sealed interface UIEvent {

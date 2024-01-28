@@ -51,6 +51,7 @@ import com.seoulventure.melonbox.R
 import com.seoulventure.melonbox.feature.preview.data.SongItem
 import com.seoulventure.melonbox.feature.search.data.SongSearchUIModel
 import com.seoulventure.melonbox.ui.theme.BackgroundPreviewColor
+import com.seoulventure.melonbox.ui.theme.LoadingView
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
 import com.seoulventure.melonbox.ui.theme.MelonButton
 import com.seoulventure.melonbox.ui.theme.stylelessTextFieldColors
@@ -66,6 +67,9 @@ fun SearchScreen(
     val context = LocalContext.current
     val searchState by viewModel.searchState.collectAsStateWithLifecycle()
     val searchKeyWord by viewModel.searchKeyWord.collectAsStateWithLifecycle()
+    val isLoading by remember {
+        derivedStateOf { searchState.isLoading }
+    }
 
     LaunchedEffect(searchState.error) {
         if (searchState.error != null) {
@@ -73,31 +77,37 @@ fun SearchScreen(
         }
     }
 
-    if (searchState.data.isNotEmpty()) {
-        SearchContent(
-            searchResultList = searchState.data,
-            searchKeyWord = searchKeyWord,
-            onKeyWordChanged = {
-                viewModel.updateKeyword(it)
-            },
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (searchState.data.isNotEmpty()) {
+            SearchContent(
+                searchResultList = searchState.data,
+                searchKeyWord = searchKeyWord,
+                onKeyWordChanged = {
+                    viewModel.updateKeyword(it)
+                },
 
-            onClickSelect = {
-                SearchScreenResult(appState.navController).setResult(
-                    SearchScreenResult.Argument(
-                        targetSongId = viewModel.targetSongId,
-                        replaceSongItem = SongItem(
-                            name = it.songName,
-                            artistName = it.artistName
+                onClickSelect = {
+                    SearchScreenResult(appState.navController).setResult(
+                        SearchScreenResult.Argument(
+                            targetSongId = viewModel.targetSongId,
+                            replaceSongItem = SongItem(
+                                name = it.songName,
+                                artistName = it.artistName
+                            )
                         )
                     )
-                )
-                appState.navController.popBackStack()
-            },
-            onClickSearch = {
-                viewModel.search()
-            }
-        )
+                    appState.navController.popBackStack()
+                },
+                onClickSearch = {
+                    viewModel.search()
+                }
+            )
+        }
+        if (isLoading) {
+            LoadingView(modifier = Modifier.align(Alignment.Center))
+        }
     }
+
 }
 
 @Composable

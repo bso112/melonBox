@@ -2,9 +2,11 @@ package com.seoulventure.melonbox.ui.theme
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -98,6 +100,16 @@ private fun InternalMelonButton(
     }
 }
 
+
+@Composable
+fun LoadingView(modifier: Modifier = Modifier) {
+    CircularProgressIndicator(
+        color = MelonBoxTheme.colors.melon,
+        strokeWidth = 5.dp,
+        modifier = modifier.size(50.dp)
+    )
+}
+
 @Preview
 @Composable
 fun MelonButtonPreview() {
@@ -105,4 +117,10 @@ fun MelonButtonPreview() {
         textRes = R.string.action_input_share_melon_uri,
         onClick = {}
     )
+}
+
+@Preview
+@Composable
+fun LoadingPreview() {
+    LoadingView()
 }
