@@ -40,7 +40,6 @@ import com.seoulventure.melonbox.feature.login.google.registerForGoogleLoginResu
 import com.seoulventure.melonbox.feature.main.navigateMain
 import com.seoulventure.melonbox.logD
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
-import com.seoulventure.melonbox.ui.theme.color_background
 
 
 @Composable
@@ -88,7 +87,7 @@ fun LoginContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color_background),
+            .background(MelonBoxTheme.colors.background),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

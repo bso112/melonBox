@@ -39,8 +39,6 @@ import com.seoulventure.melonbox.R
 import com.seoulventure.melonbox.feature.preview.navigatePlaylistPreview
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
 import com.seoulventure.melonbox.ui.theme.MelonButton
-import com.seoulventure.melonbox.ui.theme.color_background
-import com.seoulventure.melonbox.ui.theme.color_text_not_important
 import com.seoulventure.melonbox.ui.theme.stylelessTextFieldColors
 
 
@@ -74,7 +72,7 @@ fun MainContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color_background),
+            .background(MelonBoxTheme.colors.background),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -98,7 +96,7 @@ fun MainContent(
                 placeholder = {
                     Text(
                         text = stringResource(id = R.string.hint_input_melon_playlist_url),
-                        color = color_text_not_important,
+                        color = MelonBoxTheme.colors.textNotImportant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )

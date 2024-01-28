@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -56,17 +57,9 @@ import com.seoulventure.melonbox.feature.main.MAIN_ROUTE
 import com.seoulventure.melonbox.feature.preview.data.SongItem
 import com.seoulventure.melonbox.feature.search.SearchScreenResult
 import com.seoulventure.melonbox.feature.search.navigateSearch
-import com.seoulventure.melonbox.ui.theme.BACKGROUND_PREVIEW
+import com.seoulventure.melonbox.ui.theme.BackgroundPreviewColor
+import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
 import com.seoulventure.melonbox.ui.theme.StaticMelonButton
-import com.seoulventure.melonbox.ui.theme.color_background
-import com.seoulventure.melonbox.ui.theme.color_btn_disable
-import com.seoulventure.melonbox.ui.theme.color_btn_enable
-import com.seoulventure.melonbox.ui.theme.color_card_background
-import com.seoulventure.melonbox.ui.theme.color_icon_gray
-import com.seoulventure.melonbox.ui.theme.color_melon
-import com.seoulventure.melonbox.ui.theme.color_text
-import com.seoulventure.melonbox.ui.theme.color_text_not_important
-import com.seoulventure.melonbox.ui.theme.color_warning
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.collectLatest
@@ -81,6 +74,7 @@ fun PlaylistPreviewScreen(
     viewModel: PlaylistPreviewViewModel = hiltViewModel()
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
+    val context = LocalContext.current
     val playlistState by viewModel.playlistState.collectAsStateWithLifecycle()
     val selectedSong by viewModel.selectedSong.collectAsStateWithLifecycle()
 
@@ -109,16 +103,19 @@ fun PlaylistPreviewScreen(
             viewModel.uiEvent.collectLatest { uiEvent ->
                 when (uiEvent) {
                     is UIEvent.Error -> {
-                        appState.snackBarHostState.showSnackbar("에러가 발생했습니다")
+                        appState.snackBarHostState.showSnackbar(context.getString(R.string.msg_error_generic))
                         uiEvent.t.printStackTrace()
                     }
 
                     is UIEvent.NavigateComplete -> {
-                        appState.navController.navigateComplete(uiEvent.insertedMusicCount) {
-                            popUpTo(
-                                MAIN_ROUTE
-                            )
+                        if (uiEvent.insertedMusicCount <= 0) {
+                            appState.snackBarHostState.showSnackbar(context.getString(R.string.msg_error_generic))
+                        } else {
+                            appState.navController.navigateComplete(uiEvent.insertedMusicCount) {
+                                popUpTo(MAIN_ROUTE)
+                            }
                         }
+
                     }
                 }
             }
@@ -168,11 +165,12 @@ fun PlaylistPreviewContent(
     var showDeleteAlertDialog: Boolean by remember {
         mutableStateOf(false)
     }
+    val colors = MelonBoxTheme.colors
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color_background),
+            .background(colors.background),
         verticalArrangement = Arrangement.Center
     ) {
         Column(modifier = Modifier.padding(top = 24.dp, start = 24.dp)) {
@@ -196,13 +194,13 @@ fun PlaylistPreviewContent(
             StaticMelonButton(
                 textRes = R.string.action_cancel,
                 onClick = onClickCancel,
-                containerColor = color_btn_disable
+                containerColor = colors.btnDisabled
             )
             Spacer(modifier = Modifier.size(10.dp))
             StaticMelonButton(
                 textRes = R.string.action_confirm,
                 onClick = onClickConfirm,
-                containerColor = color_btn_enable
+                containerColor = colors.btnEnabled
             )
         }
         Spacer(modifier = Modifier.size(80.dp))
@@ -216,8 +214,8 @@ fun PlaylistPreviewContent(
         )
 
         ModalBottomSheet(
-            containerColor = color_card_background,
-            contentColor = color_text,
+            containerColor = colors.cardBackground,
+            contentColor = colors.text,
             onDismissRequest = { showBottomSheet = false },
             sheetState = bottomSheetState,
             tonalElevation = 15.dp
@@ -238,7 +236,7 @@ fun PlaylistPreviewContent(
                     }) {
                     Text(
                         text = stringResource(id = R.string.action_replace),
-                        color = color_text,
+                        color = colors.text,
                         style = bottomSheetTextStyle,
                     )
                 }
@@ -254,7 +252,7 @@ fun PlaylistPreviewContent(
                     Text(
                         text = stringResource(id = R.string.action_delete),
                         style = bottomSheetTextStyle,
-                        color = color_warning,
+                        color = colors.warning,
                     )
                 }
             }
@@ -301,7 +299,7 @@ fun PlaylistPager(
             modifier = Modifier
                 .carouselTransition(index, pagerState),
             colors = CardDefaults.cardColors(
-                containerColor = color_card_background
+                containerColor = MelonBoxTheme.colors.cardBackground
             ),
             shape = CardDefaults.elevatedShape,
         ) {
@@ -343,7 +341,8 @@ fun PlaylistPageIndicator(modifier: Modifier, currentPage: Int, totalPage: Int) 
         repeat(totalPage) { index ->
             val isPageSelected = index == currentPage
             val size = if (isPageSelected) 10.dp else 8.dp
-            val color = if (isPageSelected) color_melon else color_icon_gray
+            val color =
+                if (isPageSelected) MelonBoxTheme.colors.melon else MelonBoxTheme.colors.iconGray
             Box(
                 modifier = Modifier
                     .clip(CircleShape)
@@ -390,7 +389,7 @@ fun SongItem(songItem: SongItem, onClickItem: (SongItem) -> Unit) {
             Text(
                 text = songItem.artistName,
                 fontSize = 13.sp,
-                color = color_text_not_important,
+                color = MelonBoxTheme.colors.textNotImportant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -398,7 +397,7 @@ fun SongItem(songItem: SongItem, onClickItem: (SongItem) -> Unit) {
         Spacer(modifier = Modifier.size(5.dp))
         Icon(
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-            tint = color_icon_gray,
+            tint = MelonBoxTheme.colors.iconGray,
             contentDescription = null
         )
     }
@@ -411,7 +410,7 @@ fun DeleteAlertDialog(
     onConfirmation: () -> Unit = {},
 ) {
     AlertDialog(
-        containerColor = color_card_background,
+        containerColor = MelonBoxTheme.colors.cardBackground,
         text = {
             Text(
                 stringResource(id = R.string.msg_confirm_delete),
@@ -422,26 +421,32 @@ fun DeleteAlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = onConfirmation) {
-                Text(text = stringResource(id = R.string.action_confirm), color = color_melon)
+                Text(
+                    text = stringResource(id = R.string.action_confirm),
+                    color = MelonBoxTheme.colors.melon
+                )
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(stringResource(id = R.string.action_cancel), color = color_melon)
+                Text(
+                    stringResource(id = R.string.action_cancel),
+                    color = MelonBoxTheme.colors.melon
+                )
             }
         }
     )
 }
 
 @Composable
-@Preview
+@Preview(showBackground = true, backgroundColor = 0xFFFFFF)
 fun DeleteAlertDialogPreview() {
     DeleteAlertDialog()
 }
 
 @Composable
 @Preview(
-    showBackground = true, backgroundColor = BACKGROUND_PREVIEW, showSystemUi = true,
+    showBackground = true, backgroundColor = BackgroundPreviewColor, showSystemUi = true,
     device = "id:pixel_4"
 )
 fun PlaylistPreviewPreview() {

@@ -32,11 +32,9 @@ import androidx.compose.ui.unit.sp
 import com.seoulventure.melonbox.Action
 import com.seoulventure.melonbox.MelonBoxAppState
 import com.seoulventure.melonbox.R
-import com.seoulventure.melonbox.ui.theme.BACKGROUND_PREVIEW
+import com.seoulventure.melonbox.ui.theme.BackgroundPreviewColor
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
 import com.seoulventure.melonbox.ui.theme.StaticMelonButton
-import com.seoulventure.melonbox.ui.theme.color_background
-import com.seoulventure.melonbox.ui.theme.color_melon
 
 
 private const val PACKAGE_YT_MUSIC = "com.google.android.apps.youtube.music"
@@ -83,7 +81,7 @@ private fun CompleteContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(color_background),
+                .background(MelonBoxTheme.colors.background),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -108,7 +106,7 @@ private fun CompleteContent(
             StaticMelonButton(
                 textRes = R.string.action_go_to_yt_music,
                 onClick = onClickDone,
-                containerColor = color_melon
+                containerColor = MelonBoxTheme.colors.melon
             )
         }
         IconButton(
@@ -126,7 +124,7 @@ private fun CompleteContent(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = BACKGROUND_PREVIEW, showSystemUi = true)
+@Preview(showBackground = true, backgroundColor = BackgroundPreviewColor, showSystemUi = true)
 @Composable
 fun CompleteContentPreview() {
     MelonBoxTheme {

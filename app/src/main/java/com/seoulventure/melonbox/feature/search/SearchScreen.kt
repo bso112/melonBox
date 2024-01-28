@@ -50,13 +50,9 @@ import com.seoulventure.melonbox.MelonBoxAppState
 import com.seoulventure.melonbox.R
 import com.seoulventure.melonbox.feature.preview.data.SongItem
 import com.seoulventure.melonbox.feature.search.data.SongSearchUIModel
-import com.seoulventure.melonbox.ui.theme.BACKGROUND_PREVIEW
+import com.seoulventure.melonbox.ui.theme.BackgroundPreviewColor
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
 import com.seoulventure.melonbox.ui.theme.MelonButton
-import com.seoulventure.melonbox.ui.theme.color_background
-import com.seoulventure.melonbox.ui.theme.color_card_background
-import com.seoulventure.melonbox.ui.theme.color_selected_item_background
-import com.seoulventure.melonbox.ui.theme.color_text_not_important
 import com.seoulventure.melonbox.ui.theme.stylelessTextFieldColors
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -73,7 +69,7 @@ fun SearchScreen(
 
     LaunchedEffect(searchState.error) {
         if (searchState.error != null) {
-            appState.snackBarHostState.showSnackbar(context.getString(R.string.msg_network_error))
+            appState.snackBarHostState.showSnackbar(context.getString(R.string.msg_error_generic))
         }
     }
 
@@ -123,7 +119,7 @@ private fun SearchContent(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(color_background)
+            .background(MelonBoxTheme.colors.background)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -187,7 +183,7 @@ private fun SearchBar(
             placeholder = {
                 Text(
                     text = stringResource(id = R.string.hint_input_melon_playlist_url),
-                    color = color_text_not_important,
+                    color = MelonBoxTheme.colors.textNotImportant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -225,7 +221,7 @@ private fun SearchResultList(
         modifier = modifier
             .fillMaxSize(),
         colors = CardDefaults.cardColors(
-            containerColor = color_card_background
+            containerColor = MelonBoxTheme.colors.cardBackground
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 10.dp
@@ -253,7 +249,7 @@ private fun SearchResultList(
                         .fillMaxWidth()
                         .height(50.dp)
                         .align(Alignment.TopCenter),
-                    startColor = color_card_background,
+                    startColor = MelonBoxTheme.colors.cardBackground,
                     endColor = Color.Transparent
                 )
             }
@@ -264,7 +260,7 @@ private fun SearchResultList(
                         .height(50.dp)
                         .align(Alignment.BottomCenter),
                     startColor = Color.Transparent,
-                    endColor = color_card_background
+                    endColor = MelonBoxTheme.colors.cardBackground
                 )
             }
         }
@@ -279,7 +275,8 @@ private fun SongSearchResultItem(
     songSearchResult: SongSearchUIModel,
     onSelectItem: (SongSearchUIModel) -> Unit
 ) {
-    val backgroundColor = if (isSelected) color_selected_item_background else Color.Transparent
+    val backgroundColor =
+        if (isSelected) MelonBoxTheme.colors.selectedItemBackground else Color.Transparent
 
     Column(
         modifier = Modifier
@@ -297,7 +294,7 @@ private fun SongSearchResultItem(
         Text(
             songSearchResult.artistName,
             fontSize = 13.sp,
-            color = color_text_not_important,
+            color = MelonBoxTheme.colors.textNotImportant,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -321,7 +318,7 @@ private fun SelectSongButton(
 
 
 @Composable
-@Preview(showBackground = true, backgroundColor = BACKGROUND_PREVIEW, showSystemUi = true)
+@Preview(showBackground = true, backgroundColor = BackgroundPreviewColor, showSystemUi = true)
 fun SearchContentPreview() {
     MelonBoxTheme {
         SearchContent(

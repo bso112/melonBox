@@ -1,40 +1,16 @@
 package com.seoulventure.melonbox.ui.theme
 
 import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80,
-)
-
-private val LightColorScheme = lightColorScheme(
-    primary = color_background_light,
-    secondary = PurpleGrey40,
-    tertiary = Pink40,
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
-)
 
 @Composable
 fun MelonBoxTheme(
@@ -43,27 +19,40 @@ fun MelonBoxTheme(
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
+    val melonColors = MelonColors(
+        btnDisabled = Color(0xFFB6B6B6),
+        btnEnabled = Color(0xFFB0D699),
+        warning = Color(0xFFFF6E6E),
+        melon = Color(0xFFB0D699),
+        selectedItemBackground = Color(0xFFDCF5CC),
+        textNotImportant = Color(0xFFC2C2C2),
+        iconGray = Color(0xFFD8D8D8),
+        cardBackground = Color(0xFFFFFFFF),
+        text = Color(0xFF2B2B2B),
+        background = Color(0xFFEDEDED)
+    )
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
+            window.statusBarColor = melonColors.cardBackground.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    CompositionLocalProvider(
+        LocalMelonColors provides melonColors
+    ) {
+        MaterialTheme(
+            typography = Typography,
+            content = content
+        )
+    }
+}
+
+object MelonBoxTheme {
+    val colors: MelonColors
+        @Composable
+        get() = LocalMelonColors.current
 }

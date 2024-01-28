@@ -14,16 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.seoulventure.melonbox.feature.complete.completeScreen
 import com.seoulventure.melonbox.feature.login.LOGIN_ROUTE
 import com.seoulventure.melonbox.feature.login.loginScreen
-import com.seoulventure.melonbox.feature.main.MAIN_ROUTE
 import com.seoulventure.melonbox.feature.main.mainScreen
 import com.seoulventure.melonbox.feature.preview.playlistPreview
 import com.seoulventure.melonbox.feature.search.searchScreen
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
-import com.seoulventure.melonbox.ui.theme.color_background
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -48,7 +45,7 @@ fun MelonBoxAppCompose(
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()
-                .background(color_background),
+                .background(MelonBoxTheme.colors.background),
             snackbarHost = { SnackbarHost(appState.snackBarHostState) },
         ) { padding ->
             NavHost(

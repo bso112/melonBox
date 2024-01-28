@@ -69,8 +69,8 @@ private fun InternalMelonButton(
 ) {
     val colors = if (containerColor == null) {
         ButtonDefaults.buttonColors(
-            containerColor = color_btn_enable,
-            disabledContainerColor = color_btn_disable,
+            containerColor = MelonBoxTheme.colors.btnEnabled,
+            disabledContainerColor = MelonBoxTheme.colors.btnDisabled,
             contentColor = Color.White,
             disabledContentColor = Color.White
         )
