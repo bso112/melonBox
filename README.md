@@ -21,9 +21,5 @@
 - Google OAuth를 이용해 Youtube Data API에 대한 Access Token을 얻습니다.
 
 </br></br>
-<img src="https://github.com/bso112/melonBox/assets/40523630/bbafd1a6-6d85-4548-942a-db8ae25e2a10" width="320" heigth="1024">
-
-
-
-
+<img src="https://github.com/bso112/melonBox/assets/40523630/f394899f-826c-449a-915f-8804bc6f6507" width="320" heigth="1024">
 
