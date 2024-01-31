@@ -1,5 +1,6 @@
 package com.seoulventure.melonbox.feature.main
 
+import android.net.Uri
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -45,7 +46,7 @@ import com.seoulventure.melonbox.ui.theme.stylelessTextFieldColors
 @Composable
 fun MainScreen(appState: MelonBoxAppState) {
     MainContent {
-        appState.navController.navigatePlaylistPreview(it)
+        appState.navController.navigatePlaylistPreview(Uri.encode(it))
     }
 }
 
