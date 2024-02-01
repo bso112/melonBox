@@ -1,5 +1,6 @@
 package com.seoulventure.melonbox.feature.preview.data
 
+import android.net.Uri
 import android.os.Parcelable
 import com.seoulventure.melonbox.domain.Song
 import kotlinx.parcelize.Parcelize
@@ -14,6 +15,6 @@ data class SongItem(
 
 fun Song.toUIModel() = SongItem(
     id = id,
-    name = name,
-    artistName = artistName
+    name = Uri.decode(name),
+    artistName = Uri.decode(artistName)
 )
