@@ -19,6 +19,7 @@ object KtorClient {
 
     //http 클라이언트
     val httpClient: HttpClient = HttpClient(CIO) {
+        expectSuccess = true
         // json 설정
         install(ContentNegotiation) {
             json(Json {

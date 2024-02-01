@@ -2,25 +2,32 @@ package com.seoulventure.melonbox.data
 
 import com.seoulventure.melonbox.data.response.MelonPlaylistResponse
 import com.seoulventure.melonbox.data.response.MelonSongResponse
-import io.ktor.client.HttpClient
+import kotlinx.coroutines.coroutineScope
+import org.jsoup.Jsoup
 import javax.inject.Inject
 import javax.inject.Singleton
 
 
 @Singleton
-class MelonDataSource @Inject constructor(
-    private val httpClient: HttpClient
-) {
+class MelonDataSource @Inject constructor() {
     suspend fun getMelonSongList(playlistUrl: String): MelonPlaylistResponse {
-        return fakeMelonPlaylistResponse
-        //return httpClient.get(playlistUrl).body()
+        return coroutineScope {
+            val redirectQuery = Jsoup.connect(playlistUrl).apply { get() }.response().url().query
+            val plylstSeq =
+                redirectQuery.split("&").find { it.contains("plylstSeq") }?.split("=")?.getOrNull(1)
+                    ?: return@coroutineScope MelonPlaylistResponse(data = emptyList())
+
+            val doc = Jsoup
+                .connect("https://www.melon.com/mymusic/playlist/mymusicplaylistview_listSong.htm?plylstSeq=$plylstSeq")
+                .get()
+
+            val songName = doc.select(".ellipsis .fc_gray").mapNotNull { it.text() }
+            val artistName = doc.select("#artistName").mapNotNull { it.text() }
+
+            MelonPlaylistResponse(
+                songName.zip(artistName) { song, artist ->
+                    MelonSongResponse(songName = song, artistName = artist)
+                })
+        }
     }
 }
-
-private val fakeMelonPlaylistResponse = MelonPlaylistResponse(
-    data = listOf(
-        MelonSongResponse(songName = "좋니", artistName = "윤종신"),
-        MelonSongResponse(songName = "좋은날", artistName = "아이유"),
-        MelonSongResponse(songName = "네 생각", artistName = "존박"),
-    )
-)
