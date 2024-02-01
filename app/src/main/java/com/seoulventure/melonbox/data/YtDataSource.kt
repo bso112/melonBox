@@ -61,7 +61,7 @@ class YtDataSource @Inject constructor(
         }.body()
     }
 
-    suspend fun insertSongInPlaylist(playlistId: String, position : Int, videoId: String) {
+    suspend fun insertSongInPlaylist(playlistId: String, videoId: String) {
         val token = OAuthManager.accessToken ?: error("accessToken not available")
         client.post("https://www.googleapis.com/youtube/v3/playlistItems") {
             headers {
@@ -73,7 +73,6 @@ class YtDataSource @Inject constructor(
                 InsertSongInPlaylistRequest(
                     InsertSongInPlaylistSnippet(
                         playlistId = playlistId,
-                        position = position,
                         resourceId = YtResourceId(kind = "youtube#video", videoId = videoId)
                     )
                 )
