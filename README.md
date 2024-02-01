@@ -15,7 +15,7 @@
 4. 최종적으로 플레이리스트를 생성하면 유튜브 뮤직에 생성된 플레이리스트가 나타납니다.
 
 ### Tech Stack
-- 멜론박스는 안드로이드의 JetPack Compose를 이용해 만들어졌습니다.
+- 멜론박스는 안드로이드의 Jetpack Compose를 이용해 만들어졌습니다.
 - 멀티모듈은 아니지만, 패키지로 data - domain - feature (ui layer)로 나뉘어져있습니다.
 - 네트워크통신은 Ktor를 사용하고 의존성 주입은 Hilt를 사용합니다.
 - Google OAuth를 이용해 Youtube Data API에 대한 Access Token을 얻습니다.
