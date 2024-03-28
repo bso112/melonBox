@@ -26,6 +26,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -62,9 +64,11 @@ import com.seoulventure.melonbox.MelonBoxAppState
 import com.seoulventure.melonbox.R
 import com.seoulventure.melonbox.feature.complete.navigateComplete
 import com.seoulventure.melonbox.feature.main.MAIN_ROUTE
+import com.seoulventure.melonbox.feature.main.navigateMain
 import com.seoulventure.melonbox.feature.preview.data.SongItem
 import com.seoulventure.melonbox.feature.search.SearchScreenResult
 import com.seoulventure.melonbox.feature.search.navigateSearch
+import com.seoulventure.melonbox.getActivity
 import com.seoulventure.melonbox.ui.theme.BackgroundPreviewColor
 import com.seoulventure.melonbox.ui.theme.LoadingView
 import com.seoulventure.melonbox.ui.theme.MelonAlertDialog
@@ -88,6 +92,7 @@ fun PlaylistPreviewScreen(
     appState: MelonBoxAppState,
     viewModel: PlaylistPreviewViewModel = hiltViewModel()
 ) {
+    val activity = LocalContext.current.getActivity()
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
     val playlistState by viewModel.playlistState.collectAsStateWithLifecycle()
@@ -121,14 +126,26 @@ fun PlaylistPreviewScreen(
                 when (uiEvent) {
                     is UIEvent.Error -> {
                         val error = uiEvent.t
-                        val errorMsgRes =
-                            if (error is ClientRequestException && error.response.status == HttpStatusCode.Forbidden) {
-                                R.string.msg_error_exceed_api_limit
-                            } else {
-                                R.string.msg_error_generic
+                        if (error is ClientRequestException && error.response.status == HttpStatusCode.Forbidden) {
+                            val result = appState.snackBarHostState.showSnackbar(
+                                context.getString(R.string.msg_error_exceed_api_limit),
+                                actionLabel = "확인",
+                                duration = SnackbarDuration.Indefinite
+                            )
+                            when (result) {
+                                SnackbarResult.ActionPerformed -> {
+                                    activity?.finish()
+                                }
+
+                                SnackbarResult.Dismissed -> {
+                                    appState.navController.navigateMain()
+                                }
                             }
 
-                        appState.snackBarHostState.showSnackbar(context.getString(errorMsgRes))
+                        } else {
+                            appState.snackBarHostState.showSnackbar(context.getString(R.string.msg_error_generic))
+                        }
+
                         uiEvent.t.printStackTrace()
                     }
 
@@ -162,7 +179,8 @@ fun PlaylistPreviewScreen(
                     appState.navController.navigateSearch(songId = it.id, keyword = it.name)
                 },
                 onClickConfirm = {
-                    val fileName = SimpleDateFormat("ddMMyy-hhmmss.SSS", Locale.KOREA).format(Date())
+                    val fileName =
+                        SimpleDateFormat("ddMMyy-hhmmss.SSS", Locale.KOREA).format(Date())
                     viewModel.createPlaylist(fileName)
                 },
                 onClickCancel = {

@@ -1,5 +1,8 @@
 package com.seoulventure.melonbox
 
+import android.content.Context
+import android.content.ContextWrapper
+import androidx.activity.ComponentActivity
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
@@ -12,4 +15,10 @@ inline fun <reified T> Any.ifIs(block: (T) -> Unit) {
     if (this is T) {
         block(this)
     }
+}
+
+fun Context.getActivity(): ComponentActivity? = when (this) {
+    is ComponentActivity -> this
+    is ContextWrapper -> baseContext.getActivity()
+    else -> null
 }
