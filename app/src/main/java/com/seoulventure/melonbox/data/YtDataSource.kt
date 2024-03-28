@@ -52,7 +52,7 @@ class YtDataSource @Inject constructor(
                 CreatePlaylistRequest(
                     PlaylistSnippet(
                         title = playlistTitle,
-                        description = "this is test",
+                        description = "",
                         tags = emptyList(),
                         defaultLanguage = "en"
                     ), PlaylistStatus(privacyStatus = "private")

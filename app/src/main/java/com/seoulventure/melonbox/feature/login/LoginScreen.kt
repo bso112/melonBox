@@ -19,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -131,36 +130,6 @@ fun LoginContent(
                     Text(
                         modifier = Modifier.align(Alignment.Center),
                         text = stringResource(id = R.string.action_login_google),
-                        fontSize = 16.sp
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.size(26.dp))
-            Button(
-                contentPadding = PaddingValues(vertical = 10.dp),
-                onClick = onClickAppleLogin,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.White
-                ),
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Image(
-                        modifier = Modifier
-                            .padding(start = 15.dp)
-                            .size(40.dp)
-                            .padding(10.dp)
-                            .align(Alignment.CenterStart),
-                        painter = painterResource(id = R.drawable.apple),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(Color.White)
-                    )
-                    Spacer(modifier = Modifier.size(5.dp))
-                    Text(
-                        modifier = Modifier.align(Alignment.Center),
-                        text = stringResource(id = R.string.action_login_apple),
                         fontSize = 16.sp
                     )
                 }

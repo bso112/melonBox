@@ -15,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
@@ -41,14 +43,19 @@ class PlaylistPreviewViewModel @Inject constructor(
     private val _selectedSongItem = MutableStateFlow<SongItem?>(null)
     val selectedSong = _selectedSongItem.asStateFlow()
 
-    private val _playlistState = MutableStateFlow(PlayListUiState())
+    private val _playlistState = MutableStateFlow(PlayListUiState.Loading)
     val playlistState: StateFlow<PlayListUiState> = _playlistState.asStateFlow()
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
+    private val _isCreatingPlaylist = MutableStateFlow(false)
+    val isCreatingPlaylist = _isCreatingPlaylist.asStateFlow()
 
     private val _uiEvent = MutableSharedFlow<UIEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
+
+    private val _progress = MutableStateFlow(0f)
+    val progress = _progress.asStateFlow()
+
+    private var createPlaylistJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -57,13 +64,10 @@ class PlaylistPreviewViewModel @Inject constructor(
                 .map {
                     getYtPlaylistUseCase(it).map(Song::toUIModel).toImmutableList()
                 }
-                .onStart { _isLoading.update { true } }
                 .onEach { data ->
-                    _isLoading.update { false }
                     _playlistState.update { it.valid(data) }
                 }
                 .catch { e ->
-                    _isLoading.update { false }
                     _playlistState.update { it.error(e) }
                 }
                 .collect()
@@ -94,19 +98,25 @@ class PlaylistPreviewViewModel @Inject constructor(
     }
 
     fun createPlaylist(playlistTitle: String) {
-        viewModelScope.launch {
-            _isLoading.update { true }
-            try {
-                val insertedMusicCount = createPlaylistUseCase(
-                    playListTitle = playlistTitle,
-                    videoIdList = playlistState.value.data.map { it.id })
-
-                _uiEvent.emit(UIEvent.NavigateComplete(insertedMusicCount))
-            } catch (e: Exception) {
+        createPlaylistJob?.cancel()
+        createPlaylistJob = viewModelScope.launch {
+            val songItemIds = playlistState.value.data.map { it.id }
+            var insertedMusicCount = 0
+            createPlaylistUseCase(
+                playListTitle = playlistTitle,
+                videoIdList = songItemIds
+            ).onStart {
+                _isCreatingPlaylist.update { true }
+            }.onCompletion {
+                _uiEvent.emit(UIEvent.NavigateComplete(insertedMusicCount = insertedMusicCount))
+                _isCreatingPlaylist.update { false }
+            }.catch { e ->
                 _uiEvent.emit(UIEvent.Error(e))
                 logE(e.message.toString())
+            }.collectLatest { index ->
+                _progress.update { index / songItemIds.size.toFloat() }
+                insertedMusicCount += 1
             }
-            _isLoading.update { false }
         }
     }
 
@@ -116,14 +126,24 @@ class PlaylistPreviewViewModel @Inject constructor(
         _playlistState.update { it.valid(data = newList) }
         _selectedSongItem.update { null }
     }
+
+    fun cancelCreatingPlaylist() {
+        createPlaylistJob?.cancel()
+        _isCreatingPlaylist.update { false }
+    }
 }
 
 data class PlayListUiState(
     val error: Throwable? = null,
+    val isLoading: Boolean = false,
     val data: ImmutableList<SongItem> = persistentListOf(),
 ) {
-    fun error(t: Throwable): PlayListUiState = copy(error = t)
-    fun valid(data: ImmutableList<SongItem>) = copy(data = data, error = null)
+    fun error(t: Throwable): PlayListUiState = copy(error = t, isLoading = false)
+    fun valid(data: ImmutableList<SongItem>) = copy(data = data, isLoading = false, error = null)
+
+    companion object {
+        val Loading = PlayListUiState(isLoading = true)
+    }
 }
 
 sealed interface UIEvent {

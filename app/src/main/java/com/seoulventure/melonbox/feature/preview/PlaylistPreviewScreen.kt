@@ -29,7 +29,15 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,12 +67,18 @@ import com.seoulventure.melonbox.feature.search.SearchScreenResult
 import com.seoulventure.melonbox.feature.search.navigateSearch
 import com.seoulventure.melonbox.ui.theme.BackgroundPreviewColor
 import com.seoulventure.melonbox.ui.theme.LoadingView
+import com.seoulventure.melonbox.ui.theme.MelonAlertDialog
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
 import com.seoulventure.melonbox.ui.theme.StaticMelonButton
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.http.HttpStatusCode
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.math.absoluteValue
 import kotlin.math.ceil
 
@@ -78,7 +92,8 @@ fun PlaylistPreviewScreen(
     val context = LocalContext.current
     val playlistState by viewModel.playlistState.collectAsStateWithLifecycle()
     val selectedSong by viewModel.selectedSong.collectAsStateWithLifecycle()
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val isCreatingPlaylist by viewModel.isCreatingPlaylist.collectAsStateWithLifecycle()
+    val progress by viewModel.progress.collectAsStateWithLifecycle()
 
     SideEffect {
         val replaceResult = SearchScreenResult(appState.navController)
@@ -105,7 +120,15 @@ fun PlaylistPreviewScreen(
             viewModel.uiEvent.collectLatest { uiEvent ->
                 when (uiEvent) {
                     is UIEvent.Error -> {
-                        appState.snackBarHostState.showSnackbar(context.getString(R.string.msg_error_generic))
+                        val error = uiEvent.t
+                        val errorMsgRes =
+                            if (error is ClientRequestException && error.response.status == HttpStatusCode.Forbidden) {
+                                R.string.msg_error_exceed_api_limit
+                            } else {
+                                R.string.msg_error_generic
+                            }
+
+                        appState.snackBarHostState.showSnackbar(context.getString(errorMsgRes))
                         uiEvent.t.printStackTrace()
                     }
 
@@ -139,15 +162,23 @@ fun PlaylistPreviewScreen(
                     appState.navController.navigateSearch(songId = it.id, keyword = it.name)
                 },
                 onClickConfirm = {
-                    viewModel.createPlaylist("test playlist")
+                    val fileName = SimpleDateFormat("ddMMyy-hhmmss.SSS", Locale.KOREA).format(Date())
+                    viewModel.createPlaylist(fileName)
                 },
                 onClickCancel = {
                     appState.navController.popBackStack()
                 }
             )
         }
-        if (isLoading) {
+        if (playlistState.isLoading) {
             LoadingView(modifier = Modifier.align(Alignment.Center))
+        } else if (isCreatingPlaylist) {
+            val percent: Int = (progress * 100).toInt()
+            MelonAlertDialog(
+                onDismissRequest = { viewModel.cancelCreatingPlaylist() },
+                text = "플레이리스트를 생성하는 중입니다\n ${percent}% 완료...",
+                cancelText = "취소하기"
+            )
         }
     }
 }
@@ -444,6 +475,7 @@ fun DeleteAlertDialog(
         }
     )
 }
+
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xFFFFFF)

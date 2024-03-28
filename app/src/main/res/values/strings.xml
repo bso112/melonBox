@@ -24,4 +24,5 @@
     <string name="action_copy">복사</string>
     <string name="msg_cannot_open_yt_music">앱을 열 수 없습니다</string>
     <string name="msg_error_generic">에러가 발생했습니다. 다시 시도해주세요</string>
+    <string name="msg_error_exceed_api_limit">오늘의 할당량을 초과했습니다. 내일 다시 시도해주세요.</string>
 </resources>

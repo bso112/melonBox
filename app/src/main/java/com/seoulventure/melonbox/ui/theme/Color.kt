@@ -1,5 +1,6 @@
 package com.seoulventure.melonbox.ui.theme
 
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -9,11 +10,11 @@ import androidx.compose.ui.graphics.Color
 val Color.Companion.TextBlack inline get() = Color(0xFF2B2B2B)
 
 //must be compile time constant
-const val BackgroundPreviewColor  = 0xFFEDEDED
+const val BackgroundPreviewColor = 0xFFEDEDED
 
 @Immutable
 data class MelonColors(
-    val background : Color,
+    val background: Color,
     val btnDisabled: Color,
     val btnEnabled: Color,
     val warning: Color,
@@ -50,5 +51,13 @@ val stylelessTextFieldColors
         focusedIndicatorColor = Color.Transparent,
         unfocusedIndicatorColor = Color.Transparent,
         disabledIndicatorColor = Color.Transparent
+    )
+
+val melonCardColors
+    @Composable get() = CardColors(
+        containerColor = MelonBoxTheme.colors.cardBackground,
+        contentColor = MelonBoxTheme.colors.text,
+        disabledContainerColor = MelonBoxTheme.colors.cardBackground,
+        disabledContentColor = MelonBoxTheme.colors.text
     )
 
