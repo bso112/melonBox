@@ -1,5 +1,6 @@
 package com.seoulventure.melonbox.feature.preview
 
+import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -45,7 +46,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -56,15 +56,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.repeatOnLifecycle
 import com.seoulventure.melonbox.Action
 import com.seoulventure.melonbox.MelonBoxAppState
 import com.seoulventure.melonbox.R
 import com.seoulventure.melonbox.feature.complete.navigateComplete
 import com.seoulventure.melonbox.feature.main.MAIN_ROUTE
-import com.seoulventure.melonbox.feature.main.navigateMain
 import com.seoulventure.melonbox.feature.preview.data.SongItem
 import com.seoulventure.melonbox.feature.search.SearchScreenResult
 import com.seoulventure.melonbox.feature.search.navigateSearch
@@ -78,11 +75,7 @@ import io.ktor.client.plugins.ClientRequestException
 import io.ktor.http.HttpStatusCode
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import kotlin.math.absoluteValue
 import kotlin.math.ceil
 
@@ -92,12 +85,10 @@ fun PlaylistPreviewScreen(
     appState: MelonBoxAppState,
     viewModel: PlaylistPreviewViewModel = hiltViewModel()
 ) {
-    val activity = LocalContext.current.getActivity()
-    val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
     val playlistState by viewModel.playlistState.collectAsStateWithLifecycle()
     val selectedSong by viewModel.selectedSong.collectAsStateWithLifecycle()
-    val isCreatingPlaylist by viewModel.isCreatingPlaylist.collectAsStateWithLifecycle()
+    val createPlaylistState by viewModel.createPlaylistState.collectAsStateWithLifecycle()
     val progress by viewModel.progress.collectAsStateWithLifecycle()
 
     SideEffect {
@@ -119,84 +110,76 @@ fun PlaylistPreviewScreen(
         }
     }
 
+    LaunchedEffect(createPlaylistState) {
+        when (val state = createPlaylistState) {
+            is CreatePlaylistState.Idle,
+            is CreatePlaylistState.Loading -> {
+                //do nothing..
+            }
 
-    LaunchedEffect(Unit) {
-        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            viewModel.uiEvent.collectLatest { uiEvent ->
-                when (uiEvent) {
-                    is UIEvent.Error -> {
-                        val error = uiEvent.t
-                        if (error is ClientRequestException && error.response.status == HttpStatusCode.Forbidden) {
-                            val result = appState.snackBarHostState.showSnackbar(
-                                context.getString(R.string.msg_error_exceed_api_limit),
-                                actionLabel = "확인",
-                                duration = SnackbarDuration.Indefinite
-                            )
-                            when (result) {
-                                SnackbarResult.ActionPerformed -> {
-                                    activity?.finish()
-                                }
+            is CreatePlaylistState.Error -> {
+                val error = state.throwable
+                error.printStackTrace()
+                if (error is ClientRequestException) {
+                    handleYoutubeApiError(
+                        exception = error,
+                        context = context,
+                        appState = appState
+                    )
+                }
+            }
 
-                                SnackbarResult.Dismissed -> {
-                                    appState.navController.navigateMain()
-                                }
-                            }
-
-                        } else {
-                            appState.snackBarHostState.showSnackbar(context.getString(R.string.msg_error_generic))
-                        }
-
-                        uiEvent.t.printStackTrace()
-                    }
-
-                    is UIEvent.NavigateComplete -> {
-                        if (uiEvent.insertedMusicCount <= 0) {
-                            appState.snackBarHostState.showSnackbar(context.getString(R.string.msg_error_generic))
-                        } else {
-                            appState.navController.navigateComplete(uiEvent.insertedMusicCount) {
-                                popUpTo(MAIN_ROUTE)
-                            }
-                        }
-
+            is CreatePlaylistState.Success -> {
+                if (state.insertedMusicCount <= 0) {
+                    appState.snackBarHostState.showSnackbar(context.getString(R.string.msg_error_generic))
+                } else {
+                    appState.navController.navigateComplete(state.insertedMusicCount) {
+                        popUpTo(MAIN_ROUTE)
                     }
                 }
             }
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (playlistState.data.isNotEmpty()) {
-            PlaylistPreviewContent(
-                songItemList = playlistState.data,
-                selectedSongItem = selectedSong,
-                onClickSongItem = {
-                    viewModel.selectSong(it)
-                },
-                onClickDelete = {
-                    viewModel.deleteSelectedSong()
-                },
-                onClickReplace = {
-                    appState.navController.navigateSearch(songId = it.id, keyword = it.name)
-                },
-                onClickConfirm = {
-                    val fileName =
-                        SimpleDateFormat("ddMMyy-hhmmss.SSS", Locale.KOREA).format(Date())
-                    viewModel.createPlaylist(fileName)
-                },
-                onClickCancel = {
-                    appState.navController.popBackStack()
-                }
-            )
-        }
-        if (playlistState.isLoading) {
-            LoadingView(modifier = Modifier.align(Alignment.Center))
-        } else if (isCreatingPlaylist) {
-            val percent: Int = (progress * 100).toInt()
-            MelonAlertDialog(
-                onDismissRequest = { viewModel.cancelCreatingPlaylist() },
-                text = "플레이리스트를 생성하는 중입니다\n ${percent}% 완료...",
-                cancelText = "취소하기"
-            )
+    if (playlistState.error != null) {
+        val error = checkNotNull(playlistState.error)
+        error.printStackTrace()
+
+        val errorMsg = error.getErrorViewMsg()
+        ErrorView(errorMsg) { appState.navController.popBackStack() }
+    } else {
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (playlistState.data.isNotEmpty()) {
+                PlaylistPreviewContent(
+                    songItemList = playlistState.data,
+                    selectedSongItem = selectedSong,
+                    onClickSongItem = {
+                        viewModel.selectSong(it)
+                    },
+                    onClickDelete = {
+                        viewModel.deleteSelectedSong()
+                    },
+                    onClickReplace = {
+                        appState.navController.navigateSearch(songId = it.id, keyword = it.name)
+                    },
+                    onClickConfirm = {
+                        viewModel.createPlaylist(context.getString(R.string.txt_created_playlist_title))
+                    },
+                    onClickCancel = {
+                        appState.navController.popBackStack()
+                    }
+                )
+            }
+            if (playlistState.isLoading) {
+                LoadingView(modifier = Modifier.align(Alignment.Center))
+            } else if (createPlaylistState is CreatePlaylistState.Loading) {
+                val percent: Int = (progress * 100).toInt()
+                MelonAlertDialog(
+                    onDismissRequest = { viewModel.cancelCreatingPlaylist() },
+                    text = stringResource(id = R.string.msg_creating_playlist, percent),
+                    cancelText = stringResource(id = R.string.action_cancel_long)
+                )
+            }
         }
     }
 }
@@ -342,7 +325,6 @@ fun PlaylistPager(
         ceil(songItemList.size / visibleSongListCount.toFloat()).toInt()
     }
 
-    //modifier.padding(horizontal = 18.dp, vertical = 25.dp)
     HorizontalPager(
         modifier = modifier,
         contentPadding = PaddingValues(horizontal = 24.dp),
@@ -496,26 +478,111 @@ fun DeleteAlertDialog(
 
 
 @Composable
-@Preview(showBackground = true, backgroundColor = 0xFFFFFF)
-fun DeleteAlertDialogPreview() {
-    DeleteAlertDialog()
-}
-
-@Composable
 @Preview(
     showBackground = true, backgroundColor = BackgroundPreviewColor, showSystemUi = true,
     device = "id:pixel_4"
 )
 fun PlaylistPreviewPreview() {
-    PlaylistPreviewContent(
-        songItemList = fakeSongListItems,
-        selectedSongItem = null,
-        onClickSongItem = {},
-        onClickReplace = {},
-        onClickConfirm = {},
-        onClickCancel = {},
-        onClickDelete = {}
-    )
+    MelonBoxTheme {
+        PlaylistPreviewContent(
+            songItemList = fakeSongListItems,
+            selectedSongItem = null,
+            onClickSongItem = {},
+            onClickReplace = {},
+            onClickConfirm = {},
+            onClickCancel = {},
+            onClickDelete = {}
+        )
+    }
+}
+
+@Composable
+private fun ErrorView(
+    errorMsg: String,
+    onClickReturn: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MelonBoxTheme.colors.background),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("😵", fontSize = 50.sp)
+        Spacer(modifier = Modifier.size(15.dp))
+        Text(
+            errorMsg,
+            textAlign = TextAlign.Center,
+            color = MelonBoxTheme.colors.text,
+            lineHeight = 30.sp,
+            fontSize = 18.sp
+        )
+        Spacer(modifier = Modifier.size(30.dp))
+        StaticMelonButton(
+            textRes = R.string.action_return,
+            onClick = onClickReturn,
+            containerColor = MelonBoxTheme.colors.btnEnabled,
+            contentPadding = PaddingValues(horizontal = 30.dp, vertical = 15.dp)
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ErrorViewPreview() {
+    MelonBoxTheme {
+        ErrorView(stringResource(id = R.string.msg_error_generic)) {}
+    }
+}
+
+@Composable
+private fun Throwable.getErrorViewMsg(): String {
+    return when (this) {
+        is ClientRequestException -> {
+            if (response.status == HttpStatusCode.Forbidden) {
+                stringResource(id = R.string.msg_error_exceed_api_limit)
+            } else {
+                stringResource(id = R.string.msg_error_generic)
+            }
+        }
+
+        else -> {
+            stringResource(id = R.string.msg_error_melon_crawling)
+        }
+    }
+}
+
+private suspend fun handleYoutubeApiError(
+    exception: ClientRequestException,
+    context: Context,
+    appState: MelonBoxAppState
+) {
+    when (exception.response.status) {
+        HttpStatusCode.Forbidden -> {
+            val result = appState.snackBarHostState.showSnackbar(
+                context.getString(R.string.msg_error_exceed_api_limit),
+                actionLabel = "확인",
+                duration = SnackbarDuration.Indefinite
+            )
+            when (result) {
+                SnackbarResult.ActionPerformed -> {
+                    context.getActivity()?.finish()
+                }
+
+                SnackbarResult.Dismissed -> {
+                    appState.navController.popBackStack()
+                }
+            }
+        }
+
+        HttpStatusCode.Unauthorized -> {
+            appState.snackBarHostState.showSnackbar(context.getString(R.string.msg_error_youtube_unauthorized))
+        }
+
+        else -> {
+            appState.snackBarHostState.showSnackbar(context.getString(R.string.msg_error_generic))
+        }
+    }
 }
 
 val fakeSongListItems

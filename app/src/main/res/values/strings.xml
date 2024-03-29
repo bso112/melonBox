@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">melonBox</string>
+    <string name="app_name">멜론박스</string>
     <string name="msg_welcome">멜론박스에 오신 걸\n환영합니다</string>
     <string name="action_input_share_melon_uri">담기</string>
     <string name="title_playlist_preview_ytMusic">유투브 뮤직에서 찾았어요!</string>
@@ -7,6 +7,9 @@
     <string name="title_playlist_preview_ApMusic">유투브 뮤직에서 찾았어요!</string>
     <string name="subtitle_playlist_preview_ApMusic">이대로 유투브 뮤직 재생목록을 만들까요?</string>
     <string name="action_cancel">취소</string>
+    <string name="action_cancel_long">취소하기</string>
+    <string name="msg_creating_playlist">플레이리스트를 생성하는 중입니다\n %d 완료…</string>
+    <string name="txt_created_playlist_title">멜론박스로 생성한 플레이리스트</string>
     <string name="action_confirm">확인</string>
     <string name="action_replace">교체하기</string>
     <string name="action_delete">삭제하기</string>
@@ -23,6 +26,9 @@
     <string name="label_fail_oauth">재시도</string>
     <string name="action_copy">복사</string>
     <string name="msg_cannot_open_yt_music">앱을 열 수 없습니다</string>
-    <string name="msg_error_generic">에러가 발생했습니다. 다시 시도해주세요</string>
-    <string name="msg_error_exceed_api_limit">오늘의 할당량을 초과했습니다. 내일 다시 시도해주세요.</string>
+    <string name="action_return">돌아가기</string>
+    <string name="msg_error_generic">오류가 발생했어요!\n다시 시도해주세요</string>
+    <string name="msg_error_melon_crawling">오류가 발생했어요!\n입력한 주소를 다시 확인해주세요.</string>
+    <string name="msg_error_exceed_api_limit">오늘의 할당량을 초과했어요.😭 내일 다시 시도해주세요.</string>
+    <string name="msg_error_youtube_unauthorized">플레이리스트를 만들기 위해서는\n유투브 회원가입이 필요해요!</string>
 </resources>

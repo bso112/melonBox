@@ -46,11 +46,8 @@ class PlaylistPreviewViewModel @Inject constructor(
     private val _playlistState = MutableStateFlow(PlayListUiState.Loading)
     val playlistState: StateFlow<PlayListUiState> = _playlistState.asStateFlow()
 
-    private val _isCreatingPlaylist = MutableStateFlow(false)
-    val isCreatingPlaylist = _isCreatingPlaylist.asStateFlow()
-
-    private val _uiEvent = MutableSharedFlow<UIEvent>()
-    val uiEvent = _uiEvent.asSharedFlow()
+    private val _createPlaylistState = MutableStateFlow<CreatePlaylistState>(CreatePlaylistState.Idle)
+    val createPlaylistState = _createPlaylistState.asStateFlow()
 
     private val _progress = MutableStateFlow(0f)
     val progress = _progress.asStateFlow()
@@ -71,14 +68,6 @@ class PlaylistPreviewViewModel @Inject constructor(
                     _playlistState.update { it.error(e) }
                 }
                 .collect()
-        }
-
-        viewModelScope.launch {
-            playlistState.collectLatest {
-                if (it.error != null) {
-                    _uiEvent.emit(UIEvent.Error(it.error))
-                }
-            }
         }
     }
 
@@ -106,12 +95,13 @@ class PlaylistPreviewViewModel @Inject constructor(
                 playListTitle = playlistTitle,
                 videoIdList = songItemIds
             ).onStart {
-                _isCreatingPlaylist.update { true }
-            }.onCompletion {
-                _uiEvent.emit(UIEvent.NavigateComplete(insertedMusicCount = insertedMusicCount))
-                _isCreatingPlaylist.update { false }
+                _createPlaylistState.update { CreatePlaylistState.Loading }
+            }.onCompletion { error ->
+                if (error == null) {
+                    _createPlaylistState.update { CreatePlaylistState.Success(insertedMusicCount) }
+                }
             }.catch { e ->
-                _uiEvent.emit(UIEvent.Error(e))
+                _createPlaylistState.update { CreatePlaylistState.Error(e) }
                 logE(e.message.toString())
             }.collectLatest { index ->
                 _progress.update { index / songItemIds.size.toFloat() }
@@ -129,7 +119,7 @@ class PlaylistPreviewViewModel @Inject constructor(
 
     fun cancelCreatingPlaylist() {
         createPlaylistJob?.cancel()
-        _isCreatingPlaylist.update { false }
+        _createPlaylistState.update { CreatePlaylistState.Idle }
     }
 }
 
@@ -149,5 +139,12 @@ data class PlayListUiState(
 sealed interface UIEvent {
     data class Error(val t: Throwable) : UIEvent
     data class NavigateComplete(val insertedMusicCount: Int) : UIEvent
+}
+
+sealed interface CreatePlaylistState {
+    object Idle : CreatePlaylistState
+    object Loading : CreatePlaylistState
+    data class Success(val insertedMusicCount: Int) : CreatePlaylistState
+    data class Error(val throwable: Throwable) : CreatePlaylistState
 }
 
