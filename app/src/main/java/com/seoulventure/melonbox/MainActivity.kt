@@ -14,7 +14,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import com.seoulventure.melonbox.feature.complete.completeScreen
 import com.seoulventure.melonbox.feature.login.LOGIN_ROUTE
@@ -35,9 +34,9 @@ class MainActivity : ComponentActivity() {
         return super.dispatchTouchEvent(ev)
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             MelonBoxAppCompose()
         }
@@ -48,8 +47,6 @@ class MainActivity : ComponentActivity() {
 fun MelonBoxAppCompose(
     appState: MelonBoxAppState = rememberMelonBoxState(),
 ) {
-    val context = LocalContext.current
-
     MelonBoxTheme {
         Scaffold(
             modifier = Modifier

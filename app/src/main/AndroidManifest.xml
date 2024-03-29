@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    package="com.seoulventure.melonbox"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.seoulventure.melonbox">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
     <queries>
-        <package android:name="com.google.android.apps.youtube.music"/>
+        <package android:name="com.google.android.apps.youtube.music" />
     </queries>
 
     <application
@@ -23,14 +22,19 @@
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
+            android:launchMode="singleInstance"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.MelonBox">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/*"/>
             </intent-filter>
         </activity>
     </application>

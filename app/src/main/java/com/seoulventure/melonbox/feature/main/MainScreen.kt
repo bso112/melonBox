@@ -1,5 +1,7 @@
 package com.seoulventure.melonbox.feature.main
 
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -17,6 +19,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -34,10 +38,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.seoulventure.melonbox.Empty
+import androidx.core.util.Consumer
 import com.seoulventure.melonbox.MelonBoxAppState
 import com.seoulventure.melonbox.R
+import com.seoulventure.melonbox.emptyDisposeResult
 import com.seoulventure.melonbox.feature.preview.navigatePlaylistPreview
+import com.seoulventure.melonbox.getActivity
+import com.seoulventure.melonbox.logD
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
 import com.seoulventure.melonbox.ui.theme.MelonButton
 import com.seoulventure.melonbox.ui.theme.stylelessTextFieldColors
@@ -54,8 +61,22 @@ fun MainScreen(appState: MelonBoxAppState) {
 fun MainContent(
     onMelonDropAnimationEnd: (String) -> Unit,
 ) {
-    var melonPlaylistUrl by remember { mutableStateOf(String.Empty) }
+    val context = LocalContext.current
+
+    var melonPlaylistUrl by remember { mutableStateOf(context.getSharedUrl().orEmpty()) }
     var isButtonClicked by remember { mutableStateOf(false) }
+
+
+    DisposableEffect(Unit) {
+        val activity = context.getActivity() ?: return@DisposableEffect emptyDisposeResult
+        val listener = Consumer<Intent> { intent ->
+            melonPlaylistUrl = intent.getSharedUrl().orEmpty()
+        }
+        activity.addOnNewIntentListener(listener)
+        onDispose {
+            activity.removeOnNewIntentListener(listener)
+        }
+    }
 
     val melonTransitionY by animateFloatAsState(
         animationSpec = tween(300),
@@ -127,6 +148,22 @@ fun MainContent(
             onClick = { isButtonClicked = true },
             enabled = melonPlaylistUrl.length > 1,
         )
+    }
+}
+
+
+private fun Context.getSharedUrl(): String? {
+    return getActivity()?.intent?.getSharedUrl()
+}
+
+private fun Intent.getSharedUrl(): String? {
+    return if (action == Intent.ACTION_SEND && type == "text/plain") {
+        val sharedText = getStringExtra(Intent.EXTRA_TEXT) ?: return null
+        Regex("https://.*").find(sharedText)?.value
+    } else {
+        null
+    }.also {
+        logD("sharedUrl $it")
     }
 }
 

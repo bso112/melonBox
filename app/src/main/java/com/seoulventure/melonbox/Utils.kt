@@ -3,6 +3,7 @@ package com.seoulventure.melonbox
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.DisposableEffectScope
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
@@ -22,3 +23,5 @@ fun Context.getActivity(): ComponentActivity? = when (this) {
     is ContextWrapper -> baseContext.getActivity()
     else -> null
 }
+
+val DisposableEffectScope.emptyDisposeResult get() = onDispose { }
