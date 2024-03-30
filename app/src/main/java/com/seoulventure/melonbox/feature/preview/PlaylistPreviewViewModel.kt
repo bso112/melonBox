@@ -100,7 +100,7 @@ class PlaylistPreviewViewModel @Inject constructor(
                 }
             }.catch { e ->
                 _createPlaylistState.update { CreatePlaylistState.Error(e) }
-                logE(e.message.toString())
+                logE(e.message.toString(), e)
             }.collectLatest { index ->
                 _progress.update { index / songItemIds.size.toFloat() }
                 insertedMusicCount += 1

@@ -11,9 +11,17 @@ fun logD(msg: String) {
     }
 }
 
-fun logE(msg: String) {
+fun logE(msg: String, throwable: Throwable? = null) {
     runOnDebug {
         Log.e(TAG, msg)
+        throwable?.printStackTrace()
+    }
+}
+
+fun logE(throwable: Throwable) {
+    runOnDebug {
+        Log.e(TAG, throwable.message.toString())
+        throwable.printStackTrace()
     }
 }
 

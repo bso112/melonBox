@@ -1,6 +1,7 @@
 package com.seoulventure.melonbox
 
 import android.app.Application
+import com.google.firebase.FirebaseApp
 import dagger.hilt.android.HiltAndroidApp
 
 
@@ -9,5 +10,6 @@ class MelonBoxApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        FirebaseApp.initializeApp(this)
     }
 }

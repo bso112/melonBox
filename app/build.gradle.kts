@@ -1,9 +1,7 @@
-import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import com.google.common.base.Charsets
-import java.util.Properties
-import java.io.InputStreamReader
 import java.io.FileInputStream
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.InputStreamReader
+import java.util.Properties
 
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
@@ -13,6 +11,7 @@ plugins {
     kotlin("kapt")
     id("com.google.dagger.hilt.android")
     alias(libs.plugins.kotlinx.serialization)
+    id("com.google.gms.google-services")
 }
 
 
@@ -104,8 +103,11 @@ dependencies {
 
     implementation(libs.bundles.ktor)
 
-    implementation(platform("com.google.firebase:firebase-bom:30.2.0"))
-    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.config)
+
     implementation(libs.play.services.auth)
 
     implementation(libs.kotlinx.collections.immutable)
@@ -117,7 +119,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
 
-    implementation ("org.jsoup:jsoup:1.16.1")
+    implementation(libs.jsoup)
 
     implementation(platform("androidx.compose:compose-bom:2023.03.00"))
     implementation("androidx.compose.ui:ui")

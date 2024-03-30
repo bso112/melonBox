@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,10 +49,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.core.util.Consumer
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.seoulventure.melonbox.Empty
 import com.seoulventure.melonbox.MelonBoxAppState
 import com.seoulventure.melonbox.R
 import com.seoulventure.melonbox.feature.preview.navigatePlaylistPreview
 import com.seoulventure.melonbox.logD
+import com.seoulventure.melonbox.logE
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
 import com.seoulventure.melonbox.ui.theme.MelonButton
 import com.seoulventure.melonbox.ui.theme.stylelessTextFieldColors
@@ -60,15 +64,33 @@ import com.seoulventure.melonbox.util.getActivity
 
 
 @Composable
-fun MainScreen(appState: MelonBoxAppState) {
-    MainContent {
-        appState.navController.navigatePlaylistPreview(Uri.encode(it))
+fun MainScreen(
+    appState: MelonBoxAppState,
+    viewModel: MainViewModel = hiltViewModel()
+) {
+    val context = LocalContext.current
+    var snackBarMsg by remember {
+        mutableStateOf(String.Empty)
     }
+
+    LaunchedEffect(snackBarMsg) {
+        if (snackBarMsg.isNotBlank()) {
+            appState.snackBarHostState.showSnackbar(snackBarMsg)
+        }
+    }
+
+    MainContent(
+        tutorialUrl = viewModel.getTutorialUrl(),
+        onMelonDropAnimationEnd = { appState.navController.navigatePlaylistPreview(Uri.encode(it)) },
+        onFailToOpenTutorial = { snackBarMsg = context.getString(R.string.msg_error_generic) }
+    )
 }
 
 @Composable
 fun MainContent(
-    onMelonDropAnimationEnd: (String) -> Unit,
+    tutorialUrl: String,
+    onMelonDropAnimationEnd: (String) -> Unit = {},
+    onFailToOpenTutorial: () -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -112,12 +134,17 @@ fun MainContent(
                 .align(Alignment.Start)
                 .padding(horizontal = 44.dp, vertical = 15.dp)
                 .clickable {
-                    context.startActivity(
-                        Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse("https://www.youtube.com/watch?v=EGTzWzyeHD4")
+                    runCatching {
+                        context.startActivity(
+                            Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse(tutorialUrl)
+                            )
                         )
-                    )
+                    }.onFailure {
+                        onFailToOpenTutorial()
+                        logE("cannot open tutorial. url: $tutorialUrl", it)
+                    }
                 },
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -211,6 +238,7 @@ fun MainContentPreview() {
     MelonBoxTheme {
         Surface(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
             MainContent(
+                tutorialUrl = "",
                 onMelonDropAnimationEnd = {}
             )
         }

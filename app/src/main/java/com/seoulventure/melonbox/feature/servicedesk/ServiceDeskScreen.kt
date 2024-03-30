@@ -144,7 +144,11 @@ private val serviceDeskItems = persistentListOf(
     ServiceDeskItemData(
         question = "한번도 사용하지 않았는데 사용량이 초과되었다고 해요",
         answer = buildAnnotatedString {
-            append("멜론박스는 모든 유저가 할당량을 공유해요. 현재는 기술적인 문제로 대략 하루에 ")
+            append("멜론박스는 ")
+            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                append("모든 유저가 할당량을 공유해요.")
+            }
+            append(" 현재는 기술적인 문제로 대략 하루에 ")
             withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                 append("최대 100곡")
             }
