@@ -8,7 +8,7 @@
     <string name="subtitle_playlist_preview_ApMusic">이대로 유투브 뮤직 재생목록을 만들까요?</string>
     <string name="action_cancel">취소</string>
     <string name="action_cancel_long">취소하기</string>
-    <string name="msg_creating_playlist">플레이리스트를 생성하는 중입니다\n %d% 완료…</string>
+    <string name="msg_creating_playlist">플레이리스트를 생성하는 중입니다\n %d%% 완료…</string>
     <string name="txt_created_playlist_title">멜론박스로 생성한 플레이리스트</string>
     <string name="action_confirm">확인</string>
     <string name="action_replace">교체하기</string>

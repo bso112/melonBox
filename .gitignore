@@ -16,3 +16,4 @@ local.properties
 apikey.properties
 app/google-services.json
 .idea/
+*.aab

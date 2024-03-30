@@ -21,6 +21,7 @@ import com.seoulventure.melonbox.feature.login.loginScreen
 import com.seoulventure.melonbox.feature.main.mainScreen
 import com.seoulventure.melonbox.feature.preview.playlistPreview
 import com.seoulventure.melonbox.feature.search.searchScreen
+import com.seoulventure.melonbox.feature.servicedesk.serviceDeskScreen
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -66,6 +67,7 @@ fun MelonBoxAppCompose(
                 playlistPreview(appState = appState)
                 searchScreen(appState = appState)
                 completeScreen(appState = appState)
+                serviceDeskScreen(appState = appState)
             }
         }
     }

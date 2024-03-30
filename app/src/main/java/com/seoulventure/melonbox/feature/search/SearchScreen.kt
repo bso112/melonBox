@@ -320,7 +320,7 @@ private fun SelectSongButton(
 ) {
     MelonButton(
         modifier = modifier,
-        textRes = R.string.action_select,
+        text = stringResource(R.string.action_select),
         onClick = onClickSelect,
         enabled = enabled
     )

@@ -1,6 +1,5 @@
 package com.seoulventure.melonbox.ui.theme
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -26,24 +24,23 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.seoulventure.melonbox.Action
-import com.seoulventure.melonbox.R
 
 
 @Composable
 fun MelonButton(
     modifier: Modifier = Modifier,
-    @StringRes textRes: Int,
+    text: String,
     onClick: Action,
     contentPadding: PaddingValues = PaddingValues(horizontal = 60.dp, vertical = 20.dp),
     enabled: Boolean = true,
 ) {
     InternalMelonButton(
         modifier = modifier,
-        textRes = textRes,
+        text = text,
         onClick = onClick,
         containerColor = null,
         contentPadding = contentPadding,
-        enabled = enabled
+        enabled = enabled,
     )
 }
 
@@ -53,7 +50,7 @@ fun MelonButton(
 @Composable
 fun StaticMelonButton(
     modifier: Modifier = Modifier,
-    @StringRes textRes: Int,
+    text: String,
     onClick: Action,
     containerColor: Color,
     contentPadding: PaddingValues = PaddingValues(horizontal = 60.dp, vertical = 20.dp),
@@ -61,18 +58,18 @@ fun StaticMelonButton(
 ) {
     InternalMelonButton(
         modifier = modifier,
-        textRes = textRes,
+        text = text,
         onClick = onClick,
         containerColor = containerColor,
         contentPadding = contentPadding,
-        enabled = enabled
+        enabled = enabled,
     )
 }
 
 @Composable
 private fun InternalMelonButton(
     modifier: Modifier = Modifier,
-    @StringRes textRes: Int,
+    text: String,
     onClick: Action,
     containerColor: Color? = null,
     contentPadding: PaddingValues = PaddingValues(horizontal = 60.dp, vertical = 20.dp),
@@ -93,15 +90,14 @@ private fun InternalMelonButton(
     }
 
     Button(
-        modifier = modifier,
         shape = RoundedCornerShape(20.dp),
         onClick = onClick,
         enabled = enabled,
         contentPadding = contentPadding,
-        colors = colors
+        colors = colors,
     ) {
         Text(
-            text = stringResource(id = textRes),
+            text = text,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1
@@ -123,7 +119,7 @@ fun LoadingView(modifier: Modifier = Modifier) {
 @Composable
 fun MelonButtonPreview() {
     MelonButton(
-        textRes = R.string.action_input_share_melon_uri,
+        text = "담기",
         onClick = {}
     )
 }

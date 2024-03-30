@@ -50,6 +50,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -65,12 +66,13 @@ import com.seoulventure.melonbox.feature.main.MAIN_ROUTE
 import com.seoulventure.melonbox.feature.preview.data.SongItem
 import com.seoulventure.melonbox.feature.search.SearchScreenResult
 import com.seoulventure.melonbox.feature.search.navigateSearch
-import com.seoulventure.melonbox.getActivity
+import com.seoulventure.melonbox.feature.servicedesk.navigateServiceDesk
 import com.seoulventure.melonbox.ui.theme.BackgroundPreviewColor
 import com.seoulventure.melonbox.ui.theme.LoadingView
 import com.seoulventure.melonbox.ui.theme.MelonAlertDialog
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
 import com.seoulventure.melonbox.ui.theme.StaticMelonButton
+import com.seoulventure.melonbox.util.getActivity
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.http.HttpStatusCode
 import kotlinx.collections.immutable.ImmutableList
@@ -146,7 +148,11 @@ fun PlaylistPreviewScreen(
         error.printStackTrace()
 
         val errorMsg = error.getErrorViewMsg()
-        ErrorView(errorMsg) { appState.navController.popBackStack() }
+        ErrorView(
+            errorMsg = errorMsg,
+            onClickServiceDesk = { appState.navController.navigateServiceDesk() },
+            onClickReturn = { appState.navController.popBackStack() }
+        )
     } else {
         Box(modifier = Modifier.fillMaxSize()) {
             if (playlistState.data.isNotEmpty()) {
@@ -231,15 +237,15 @@ fun PlaylistPreviewContent(
         Spacer(modifier = Modifier.size(60.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             StaticMelonButton(
-                textRes = R.string.action_cancel,
+                text = stringResource(R.string.action_cancel),
                 onClick = onClickCancel,
-                containerColor = colors.btnDisabled
+                containerColor = colors.btnDisabled,
             )
             Spacer(modifier = Modifier.size(10.dp))
             StaticMelonButton(
-                textRes = R.string.action_confirm,
+                text = stringResource(R.string.action_confirm),
                 onClick = onClickConfirm,
-                containerColor = colors.btnEnabled
+                containerColor = colors.btnEnabled,
             )
         }
         Spacer(modifier = Modifier.size(80.dp))
@@ -499,7 +505,8 @@ fun PlaylistPreviewPreview() {
 @Composable
 private fun ErrorView(
     errorMsg: String,
-    onClickReturn: () -> Unit
+    onClickServiceDesk: () -> Unit = {},
+    onClickReturn: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -517,12 +524,20 @@ private fun ErrorView(
             lineHeight = 30.sp,
             fontSize = 18.sp
         )
+        Spacer(modifier = Modifier.size(15.dp))
+        Text(
+            modifier = Modifier.clickable { onClickServiceDesk() },
+            text = "왜 이런 오류가 발생하나요?",
+            fontSize = 12.sp,
+            color = MelonBoxTheme.colors.text,
+            style = TextStyle(textDecoration = TextDecoration.Underline)
+        )
         Spacer(modifier = Modifier.size(30.dp))
         StaticMelonButton(
-            textRes = R.string.action_return,
+            text = stringResource(id = R.string.action_return),
             onClick = onClickReturn,
             containerColor = MelonBoxTheme.colors.btnEnabled,
-            contentPadding = PaddingValues(horizontal = 30.dp, vertical = 15.dp)
+            contentPadding = PaddingValues(horizontal = 30.dp, vertical = 15.dp),
         )
     }
 }
@@ -531,7 +546,7 @@ private fun ErrorView(
 @Composable
 private fun ErrorViewPreview() {
     MelonBoxTheme {
-        ErrorView(stringResource(id = R.string.msg_error_generic)) {}
+        ErrorView(stringResource(id = R.string.msg_error_generic))
     }
 }
 

@@ -7,13 +7,20 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -34,20 +41,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.core.util.Consumer
 import com.seoulventure.melonbox.MelonBoxAppState
 import com.seoulventure.melonbox.R
-import com.seoulventure.melonbox.emptyDisposeResult
 import com.seoulventure.melonbox.feature.preview.navigatePlaylistPreview
-import com.seoulventure.melonbox.getActivity
 import com.seoulventure.melonbox.logD
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
 import com.seoulventure.melonbox.ui.theme.MelonButton
 import com.seoulventure.melonbox.ui.theme.stylelessTextFieldColors
+import com.seoulventure.melonbox.util.emptyDisposeResult
+import com.seoulventure.melonbox.util.getActivity
 
 
 @Composable
@@ -98,6 +107,34 @@ fun MainContent(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        Row(
+            modifier = Modifier
+                .align(Alignment.Start)
+                .padding(horizontal = 44.dp, vertical = 15.dp)
+                .clickable {
+                    context.startActivity(
+                        Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse("https://www.youtube.com/watch?v=EGTzWzyeHD4")
+                        )
+                    )
+                },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                modifier = Modifier.size(10.dp),
+                imageVector = Icons.Outlined.Info,
+                contentDescription = null,
+                tint = MelonBoxTheme.colors.text
+            )
+            Spacer(modifier = Modifier.size(2.dp))
+            Text(
+                text = "링크를 어디서 얻나요?",
+                color = MelonBoxTheme.colors.text,
+                fontSize = 10.sp,
+                style = TextStyle(textDecoration = TextDecoration.Underline)
+            )
+        }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -144,7 +181,7 @@ fun MainContent(
             contentDescription = null
         )
         MelonButton(
-            textRes = R.string.action_input_share_melon_uri,
+            text = stringResource(R.string.action_input_share_melon_uri),
             onClick = { isButtonClicked = true },
             enabled = melonPlaylistUrl.length > 1,
         )

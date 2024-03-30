@@ -104,7 +104,7 @@ private fun CompleteContent(
             )
             Spacer(modifier = Modifier.size(60.dp))
             StaticMelonButton(
-                textRes = R.string.action_go_to_yt_music,
+                text = stringResource(R.string.action_go_to_yt_music),
                 onClick = onClickDone,
                 containerColor = MelonBoxTheme.colors.melon
             )
