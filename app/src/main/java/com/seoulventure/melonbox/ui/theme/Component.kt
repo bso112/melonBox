@@ -90,6 +90,7 @@ private fun InternalMelonButton(
     }
 
     Button(
+        modifier = modifier,
         shape = RoundedCornerShape(20.dp),
         onClick = onClick,
         enabled = enabled,

@@ -17,3 +17,4 @@ apikey.properties
 app/google-services.json
 .idea/
 *.aab
+compose-metrics
