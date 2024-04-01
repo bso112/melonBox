@@ -35,7 +35,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -93,7 +92,7 @@ fun PlaylistPreviewScreen(
     val createPlaylistState by viewModel.createPlaylistState.collectAsStateWithLifecycle()
     val progress by viewModel.progress.collectAsStateWithLifecycle()
 
-    SideEffect {
+    LaunchedEffect(Unit) {
         val replaceResult = SearchScreenResult(appState.navController)
             .getResult()
 
