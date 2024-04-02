@@ -39,6 +39,8 @@ import com.seoulventure.melonbox.feature.login.google.registerForGoogleLoginResu
 import com.seoulventure.melonbox.feature.main.navigateMain
 import com.seoulventure.melonbox.logD
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
+import com.seoulventure.melonbox.util.FirebaseAnalytics
+import com.seoulventure.melonbox.util.FirebaseEvent
 
 
 @Composable
@@ -67,6 +69,7 @@ fun LoginScreen(
     LoginContent(
         onClickGoogleLogin = {
             googleLoginLauncher.launch(BuildConfig.GOOGLE_OAUTH_CLIENT_ID)
+            FirebaseAnalytics.logEvent(FirebaseEvent.Login)
         },
         onClickAppleLogin = {
 

@@ -47,7 +47,7 @@ play-services-auth = { module = "com.google.android.gms:play-services-auth", ver
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx" }
 firebase-config = { group = "com.google.firebase", name = "firebase-config" }
-firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
 
 
 [plugins]

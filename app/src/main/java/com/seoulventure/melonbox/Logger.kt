@@ -1,6 +1,7 @@
 package com.seoulventure.melonbox
 
 import android.util.Log
+import com.seoulventure.melonbox.util.FirebaseAnalytics
 import com.seoulventure.melonbox.util.runOnDebug
 
 private const val TAG = "melonBox_log"
@@ -16,6 +17,7 @@ fun logE(msg: String, throwable: Throwable? = null) {
         Log.e(TAG, msg)
         throwable?.printStackTrace()
     }
+    FirebaseAnalytics.logError(throwable ?: return)
 }
 
 fun logE(throwable: Throwable) {

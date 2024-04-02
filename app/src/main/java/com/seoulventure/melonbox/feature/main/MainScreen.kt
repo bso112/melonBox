@@ -59,6 +59,8 @@ import com.seoulventure.melonbox.logE
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
 import com.seoulventure.melonbox.ui.theme.MelonButton
 import com.seoulventure.melonbox.ui.theme.stylelessTextFieldColors
+import com.seoulventure.melonbox.util.FirebaseAnalytics
+import com.seoulventure.melonbox.util.FirebaseEvent
 import com.seoulventure.melonbox.util.emptyDisposeResult
 import com.seoulventure.melonbox.util.getActivity
 
@@ -81,7 +83,10 @@ fun MainScreen(
 
     MainContent(
         tutorialUrl = viewModel.getTutorialUrl(),
-        onMelonDropAnimationEnd = { appState.navController.navigatePlaylistPreview(Uri.encode(it)) },
+        onMelonDropAnimationEnd = {
+            appState.navController.navigatePlaylistPreview(Uri.encode(it))
+            FirebaseAnalytics.logEvent(FirebaseEvent.ClickPutMelon)
+        },
         onFailToOpenTutorial = { snackBarMsg = context.getString(R.string.msg_error_generic) }
     )
 }
@@ -134,6 +139,7 @@ fun MainContent(
                 .align(Alignment.Start)
                 .padding(horizontal = 44.dp, vertical = 15.dp)
                 .clickable {
+                    FirebaseAnalytics.logEvent(FirebaseEvent.ClickTutorial)
                     runCatching {
                         context.startActivity(
                             Intent(

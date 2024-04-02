@@ -71,6 +71,8 @@ import com.seoulventure.melonbox.ui.theme.LoadingView
 import com.seoulventure.melonbox.ui.theme.MelonAlertDialog
 import com.seoulventure.melonbox.ui.theme.MelonBoxTheme
 import com.seoulventure.melonbox.ui.theme.StaticMelonButton
+import com.seoulventure.melonbox.util.FirebaseAnalytics
+import com.seoulventure.melonbox.util.FirebaseEvent
 import com.seoulventure.melonbox.util.getActivity
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.http.HttpStatusCode
@@ -149,7 +151,10 @@ fun PlaylistPreviewScreen(
         val errorMsg = error.getErrorViewMsg()
         ErrorView(
             errorMsg = errorMsg,
-            onClickServiceDesk = { appState.navController.navigateServiceDesk() },
+            onClickServiceDesk = {
+                appState.navController.navigateServiceDesk()
+                FirebaseAnalytics.logEvent(FirebaseEvent.ClickServiceDesk)
+            },
             onClickReturn = { appState.navController.popBackStack() }
         )
     } else {
@@ -160,6 +165,7 @@ fun PlaylistPreviewScreen(
                     selectedSongItem = selectedSong,
                     onClickSongItem = {
                         viewModel.selectSong(it)
+                        FirebaseAnalytics.logEvent(FirebaseEvent.ClickSong)
                     },
                     onClickDelete = {
                         viewModel.deleteSelectedSong()
@@ -169,6 +175,7 @@ fun PlaylistPreviewScreen(
                     },
                     onClickConfirm = {
                         viewModel.createPlaylist(context.getString(R.string.txt_created_playlist_title))
+                        FirebaseAnalytics.logEvent(FirebaseEvent.ClickCreatePlaylist)
                     },
                     onClickCancel = {
                         appState.navController.popBackStack()
