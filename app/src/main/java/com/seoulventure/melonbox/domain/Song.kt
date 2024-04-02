@@ -1,5 +1,7 @@
 package com.seoulventure.melonbox.domain
 
+import android.text.Html
+import android.text.Html.FROM_HTML_MODE_LEGACY
 import com.seoulventure.melonbox.data.response.YtSearchItem
 
 data class Song(
@@ -11,7 +13,8 @@ data class Song(
 fun YtSearchItem.toDomain() = kotlin.runCatching {
     Song(
         id = checkNotNull(id?.videoId),
-        name = checkNotNull(snippet?.title),
-        artistName = checkNotNull(snippet?.description)
+        //특수문자 처리를 위해 html unescape
+        name = Html.fromHtml(checkNotNull(snippet?.title), FROM_HTML_MODE_LEGACY).toString(),
+        artistName = Html.fromHtml(checkNotNull(snippet?.description), FROM_HTML_MODE_LEGACY).toString()
     )
 }.getOrNull()
