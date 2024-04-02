@@ -5,7 +5,7 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 
 object FirebaseAnalytics {
-    private val analytics get() = Firebase.analytics
+    private val analytics by lazy { Firebase.analytics }
 
     fun logEvent(event: FirebaseEvent) {
         analytics.logEvent(event.name, null)
