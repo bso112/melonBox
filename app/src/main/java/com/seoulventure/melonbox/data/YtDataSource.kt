@@ -1,6 +1,5 @@
 package com.seoulventure.melonbox.data
 
-import com.seoulventure.melonbox.BuildConfig
 import com.seoulventure.melonbox.data.request.CreatePlaylistRequest
 import com.seoulventure.melonbox.data.request.InsertSongInPlaylistRequest
 import com.seoulventure.melonbox.data.request.InsertSongInPlaylistSnippet
@@ -31,7 +30,6 @@ class YtDataSource @Inject constructor(
             parameter("part", "snippet")
             parameter("maxResults", maxResult)
             parameter("q", keyword)
-            parameter("key", BuildConfig.GOOGLE_API_KEY)
             headers {
                 append(HttpHeaders.Accept, "application/json")
                 append(HttpHeaders.Authorization, "Bearer $token")
